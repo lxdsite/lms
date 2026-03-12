@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistics Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000000;
+    --surface: #030C2C;
+    --surface2: #0a1540;
+    --border: rgba(239,203,158,0.25);
+    --accent-cor: #EFCB9E;
+    --accent-lin: #EFCB9E;
+    --accent-mul: #EFCB9E;
+    --text: #FFFFFF;
+    --muted: #E5E5E5;
+    --tab-h: 56px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 24px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  header h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #EFCB9E;
+  }
+  header p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── TABS ────────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 5px;
+    max-width: 680px;
+    margin: 0 auto 36px;
+  }
+  .tab-btn {
+    flex: 1;
+    height: var(--tab-h);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Inter', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .tab-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+    border-radius: inherit;
+  }
+  .tab-btn[data-tab="correlation"]::before  { background: linear-gradient(135deg, rgba(239,203,158,.18), rgba(239,203,158,.04)); }
+  .tab-btn[data-tab="linear"]::before       { background: linear-gradient(135deg, rgba(239,203,158,.12), rgba(239,203,158,.02)); }
+  .tab-btn[data-tab="multiple"]::before     { background: linear-gradient(135deg, rgba(239,203,158,.10), rgba(239,203,158,.02)); }
+
+  .tab-btn.active { color: var(--text); }
+  .tab-btn.active::before { opacity: 1; }
+  .tab-btn[data-tab="correlation"].active  { color: var(--accent-cor); box-shadow: 0 0 0 1px rgba(239,203,158,.4); }
+  .tab-btn[data-tab="linear"].active       { color: var(--accent-lin); box-shadow: 0 0 0 1px rgba(239,203,158,.3); }
+  .tab-btn[data-tab="multiple"].active     { color: var(--accent-mul); box-shadow: 0 0 0 1px rgba(239,203,158,.25); }
+  .tab-btn:not(.active):hover { color: #E5E5E5; }
+
+  /* ── PANELS ──────────────────────────────────────── */
+  .panel { display: none; animation: fadeUp .35s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-inner {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .panel-num {
+    font-family: 'Inter', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    opacity: .08;
+    flex-shrink: 0;
+  }
+  .panel-text h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.85rem;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .panel-text p {
+    color: #E5E5E5;
+    font-size: 0.93rem;
+    line-height: 1.7;
+    max-width: 560px;
+  }
+  .panel-text .question {
+    margin-top: 12px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--text);
+    font-weight: 300;
+  }
+  #correlation .panel-text h2 { color: var(--accent-cor); }
+  #correlation .panel-text .question { background: rgba(239,203,158,.08); border-left: 3px solid var(--accent-cor); }
+  #linear .panel-text h2 { color: var(--accent-lin); }
+  #linear .panel-text .question { background: rgba(239,203,158,.06); border-left: 3px solid var(--accent-lin); }
+  #multiple .panel-text h2 { color: var(--accent-mul); }
+  #multiple .panel-text .question { background: rgba(239,203,158,.05); border-left: 3px solid var(--accent-mul); }
+
+  /* ── CANVAS CONTAINERS ───────────────────────────── */
+  .canvas-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    user-select: none;
+  }
+  canvas { display: block; border-radius: 8px; touch-action: none; }
+
+  .stat-badge {
+    position: absolute;
+    top: 24px; right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Inter', monospace;
+    font-size: 0.82rem;
+  }
+  #cor-badge span { color: var(--accent-cor); font-weight: 500; }
+  #lin-badge span { color: var(--accent-lin); font-weight: 500; }
+  #mul-badge span { color: var(--accent-mul); font-weight: 500; }
+
+  .hint {
+    margin-top: 14px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* ── MULTIPLE REGRESSION CONTROLS ───────────────── */
+  .controls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .ctrl {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .ctrl label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-family: 'Inter', monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .ctrl input[type=range] {
+    width: 100%;
+    accent-color: #EFCB9E;
+  }
+  .ctrl .val {
+    margin-top: 4px;
+    font-family: 'Inter', monospace;
+    font-size: 0.82rem;
+    color: var(--accent-mul);
+    text-align: right;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Statistics Explorer</h1>
+  <p>Interactive tools for understanding data relationships</p>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="correlation">Correlation</button>
+  <button class="tab-btn" data-tab="linear">Linear Regression</button>
+  <button class="tab-btn" data-tab="multiple">Multiple Regression</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 1 — CORRELATION
+     ═══════════════════════════════════════════════════════ -->
+<div class="panel active" id="correlation">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div class="panel-num">01</div>
+      <div class="panel-text">
+        <h2>Correlation</h2>
+        <p>Interact with the scatter plot below to see how data relationships affect correlation strength (r-value). Try moving the points to see both strong and weak correlations.</p>
+        <div class="question">💬 What patterns do you notice when the correlation is strong versus when it's weak?</div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="corCanvas" width="820" height="420"></canvas>
+      <div class="stat-badge" id="cor-badge">r = <span id="cor-val">—</span></div>
+    </div>
+    <p class="hint">🖱 Drag any point · Double-click empty area to add a point · Right-click a point to remove it</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 2 — LINEAR REGRESSION
+     ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="linear">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div class="panel-num">02</div>
+      <div class="panel-text">
+        <h2>Linear Regression</h2>
+        <p>Find the best-fit line by dragging it through the data points. This interactive model simulates how you might analyze relationships. Watch how the prediction accuracy changes as you adjust the line.</p>
+        <div class="question">💬 Try to think about what a well-fitted model could tell us.</div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="linCanvas" width="820" height="420"></canvas>
+      <div class="stat-badge" id="lin-badge">R² = <span id="lin-r2">—</span></div>
+    </div>
+    <p class="hint">🖱 Drag data points · Drag the <span style="color:var(--accent-lin)">■ red handles</span> on the line to tilt / shift it · Click "Best Fit" for optimal line</p>
+    <div style="display:flex;justify-content:center;margin-top:16px;gap:12px">
+      <button id="bestFitBtn" style="background:rgba(239,203,158,.12);border:1px solid rgba(239,203,158,.4);color:#EFCB9E;padding:9px 24px;border-radius:8px;cursor:pointer;font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;transition:all .2s">Best Fit</button>
+      <button id="resetLinBtn" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:9px 24px;border-radius:8px;cursor:pointer;font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.05em;text-transform:uppercase;transition:all .2s">Reset Points</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB 3 — MULTIPLE REGRESSION
+     ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="multiple">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div class="panel-num">03</div>
+      <div class="panel-text">
+        <h2>Multiple Regression</h2>
+        <p>Experiment with multiple variables simultaneously – much like analyzing how various business factors affect your bottom line. Adjust the sliders to see how each predictor contributes to the outcome.</p>
+        <div class="question">💬 Move the plot points to observe changes in predictions.</div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="mulCanvas" width="820" height="380"></canvas>
+      <div class="stat-badge" id="mul-badge">R² = <span id="mul-r2">—</span></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>Variable X₁ Weight (β₁)</label>
+        <input type="range" id="b1" min="-2" max="2" step="0.05" value="0.8">
+        <div class="val" id="b1val">0.80</div>
+      </div>
+      <div class="ctrl">
+        <label>Variable X₂ Weight (β₂)</label>
+        <input type="range" id="b2" min="-2" max="2" step="0.05" value="0.4">
+        <div class="val" id="b2val">0.40</div>
+      </div>
+      <div class="ctrl">
+        <label>Intercept (β₀)</label>
+        <input type="range" id="b0" min="-3" max="3" step="0.05" value="0">
+        <div class="val" id="b0val">0.00</div>
+      </div>
+    </div>
+    <p class="hint">🖱 Drag the scatter points · Adjust sliders to change regression coefficients</p>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   TABS
+   ══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'linear') drawLinear();
+    if (btn.dataset.tab === 'multiple') drawMultiple();
+  });
+});
+
+/* ══════════════════════════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════════════════════════ */
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function mean(arr) { return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function linReg(xs, ys) {
+  const mx = mean(xs), my = mean(ys);
+  let num=0, den=0;
+  for (let i=0;i<xs.length;i++) { num+=(xs[i]-mx)*(ys[i]-my); den+=(xs[i]-mx)**2; }
+  const slope = den ? num/den : 0;
+  return { slope, intercept: my - slope*mx };
+}
+function pearson(xs, ys) {
+  const mx=mean(xs), my=mean(ys);
+  let num=0, dx2=0, dy2=0;
+  for(let i=0;i<xs.length;i++){
+    const dx=xs[i]-mx, dy=ys[i]-my;
+    num+=dx*dy; dx2+=dx*dx; dy2+=dy*dy;
+  }
+  return (dx2&&dy2) ? num/Math.sqrt(dx2*dy2) : 0;
+}
+function r2(ys, preds) {
+  const my=mean(ys);
+  const ss_res = ys.reduce((s,y,i)=>s+(y-preds[i])**2,0);
+  const ss_tot = ys.reduce((s,y)=>s+(y-my)**2,0);
+  return ss_tot ? 1-ss_res/ss_tot : 1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CORRELATION CANVAS
+   ══════════════════════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('corCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = 50;
+
+  // Generate initial points (moderate positive correlation)
+  let pts = [];
+  for(let i=0;i<18;i++){
+    const x = PAD + Math.random()*(W-2*PAD);
+    const noise = (Math.random()-0.5)*(H*0.4);
+    const y = H - PAD - (x-PAD)/(W-2*PAD)*(H-2*PAD)*0.7 + noise;
+    pts.push({x: clamp(x,PAD,W-PAD), y: clamp(y,PAD,H-PAD)});
+  }
+
+  let dragging = null;
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // grid
+    ctx.strokeStyle='rgba(3,12,44,0.8)'; ctx.lineWidth=1;
+    for(let gx=PAD;gx<=W-PAD;gx+=(W-2*PAD)/6){
+      ctx.beginPath(); ctx.moveTo(gx,PAD); ctx.lineTo(gx,H-PAD); ctx.stroke();
+    }
+    for(let gy=PAD;gy<=H-PAD;gy+=(H-2*PAD)/5){
+      ctx.beginPath(); ctx.moveTo(PAD,gy); ctx.lineTo(W-PAD,gy); ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle='rgba(239,203,158,0.15)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(PAD,H-PAD); ctx.lineTo(W-PAD,H-PAD); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD,PAD); ctx.lineTo(PAD,H-PAD); ctx.stroke();
+
+    // regression line
+    if(pts.length>=2){
+      const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+      const {slope,intercept}=linReg(xs,ys);
+      const x0=PAD, x1=W-PAD;
+      const y0=slope*x0+intercept, y1=slope*x1+intercept;
+      ctx.beginPath();
+      ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
+      ctx.strokeStyle='rgba(239,203,158,0.4)'; ctx.lineWidth=2;
+      ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+
+      // r value
+      const r = pearson(xs,ys);
+      const rEl = document.getElementById('cor-val');
+      rEl.textContent = r.toFixed(3);
+      // color band
+      const abs = Math.abs(r);
+      rEl.style.color = abs>0.8 ? '#EFCB9E' : abs>0.5 ? '#E5E5E5' : '#FFFFFF';
+    }
+
+    // points
+    pts.forEach((p,i)=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,i===dragging?9:7,0,Math.PI*2);
+      ctx.fillStyle = i===dragging ? '#ffffff' : 'rgba(239,203,158,0.9)';
+      ctx.fill();
+      ctx.strokeStyle='rgba(239,203,158,0.3)'; ctx.lineWidth=2;
+      ctx.stroke();
+    });
+  }
+
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const scaleX=W/r.width, scaleY=H/r.height;
+    const cx=(e.clientX??e.touches[0].clientX)-r.left;
+    const cy=(e.clientY??e.touches[0].clientY)-r.top;
+    return {x:cx*scaleX, y:cy*scaleY};
+  }
+
+  function nearest(pos){
+    let best=-1, bd=Infinity;
+    pts.forEach((p,i)=>{ const d=Math.hypot(p.x-pos.x,p.y-pos.y); if(d<bd){bd=d;best=i;} });
+    return bd<18 ? best : -1;
+  }
+
+  canvas.addEventListener('mousedown', e=>{
+    e.preventDefault();
+    const pos=getPos(e);
+    if(e.button===2){ const i=nearest(pos); if(i>=0){pts.splice(i,1);} draw(); return; }
+    const i=nearest(pos);
+    if(i>=0) dragging=i;
+  });
+  canvas.addEventListener('dblclick', e=>{
+    const pos=getPos(e);
+    if(nearest(pos)<0){
+      pts.push({x:clamp(pos.x,PAD,W-PAD), y:clamp(pos.y,PAD,H-PAD)});
+      draw();
+    }
+  });
+  canvas.addEventListener('mousemove', e=>{
+    if(dragging===null) return;
+    const pos=getPos(e);
+    pts[dragging]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)};
+    draw();
+  });
+  canvas.addEventListener('mouseup',  ()=>dragging=null);
+  canvas.addEventListener('mouseleave',()=>dragging=null);
+  canvas.addEventListener('contextmenu', e=>e.preventDefault());
+
+  // touch
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();const pos=getPos(e);const i=nearest(pos);if(i>=0)dragging=i;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(dragging===null)return;const pos=getPos(e);pts[dragging]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)};draw();},{passive:false});
+  canvas.addEventListener('touchend',()=>dragging=null);
+
+  draw();
+})();
+
+/* ══════════════════════════════════════════════════════════
+   LINEAR REGRESSION CANVAS
+   ══════════════════════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('linCanvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, PAD=50;
+
+  let pts = [];
+  function resetPts(){
+    pts=[];
+    for(let i=0;i<16;i++){
+      const x=PAD+Math.random()*(W-2*PAD);
+      const t=(x-PAD)/(W-2*PAD);
+      const y=H-PAD - t*(H-2*PAD)*0.65 + (Math.random()-0.5)*(H*0.3);
+      pts.push({x:clamp(x,PAD,W-PAD), y:clamp(y,PAD,H-PAD)});
+    }
+  }
+  resetPts();
+
+  // User line: defined by two handle points
+  let handles = [{x:PAD+80, y:H-PAD-80},{x:W-PAD-80, y:PAD+80}];
+  let draggingPt=null, draggingHandle=null;
+
+  function lineSlope(){ return (handles[1].y-handles[0].y)/(handles[1].x-handles[0].x); }
+  function lineAt(x){ return handles[0].y + lineSlope()*(x-handles[0].x); }
+
+  function computeR2(){
+    const preds=pts.map(p=>lineAt(p.x));
+    return r2(pts.map(p=>p.y), preds);
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // grid
+    ctx.strokeStyle='rgba(3,12,44,0.8)'; ctx.lineWidth=1;
+    for(let gx=PAD;gx<=W-PAD;gx+=(W-2*PAD)/6){ctx.beginPath();ctx.moveTo(gx,PAD);ctx.lineTo(gx,H-PAD);ctx.stroke();}
+    for(let gy=PAD;gy<=H-PAD;gy+=(H-2*PAD)/5){ctx.beginPath();ctx.moveTo(PAD,gy);ctx.lineTo(W-PAD,gy);ctx.stroke();}
+
+    // axes
+    ctx.strokeStyle='rgba(239,203,158,0.15)'; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.stroke();
+
+    // residuals
+    pts.forEach(p=>{
+      const py=lineAt(p.x);
+      ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x,py);
+      ctx.strokeStyle='rgba(239,203,158,0.2)'; ctx.lineWidth=1.5; ctx.stroke();
+    });
+
+    // best-fit dotted
+    const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+    const {slope,intercept}=linReg(xs,ys);
+    ctx.beginPath(); ctx.moveTo(PAD,slope*PAD+intercept); ctx.lineTo(W-PAD,slope*(W-PAD)+intercept);
+    ctx.strokeStyle='rgba(239,203,158,0.15)'; ctx.lineWidth=1.5; ctx.setLineDash([4,5]); ctx.stroke(); ctx.setLineDash([]);
+
+    // user line
+    ctx.beginPath(); ctx.moveTo(PAD,lineAt(PAD)); ctx.lineTo(W-PAD,lineAt(W-PAD));
+    ctx.strokeStyle='#EFCB9E'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // handles
+    handles.forEach(h=>{
+      ctx.beginPath(); ctx.rect(h.x-8,h.y-8,16,16);
+      ctx.fillStyle='#EFCB9E'; ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    });
+
+    // points
+    pts.forEach((p,i)=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,draggingPt===i?9:6,0,Math.PI*2);
+      ctx.fillStyle=draggingPt===i?'#fff':'rgba(239,203,158,0.9)'; ctx.fill();
+      ctx.strokeStyle='rgba(239,203,158,0.35)'; ctx.lineWidth=2; ctx.stroke();
+    });
+
+    // R² label
+    document.getElementById('lin-r2').textContent = computeR2().toFixed(3);
+  }
+
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const sx=W/r.width, sy=H/r.height;
+    const cx=(e.clientX??e.touches[0].clientX)-r.left;
+    const cy=(e.clientY??e.touches[0].clientY)-r.top;
+    return {x:cx*sx, y:cy*sy};
+  }
+  function nearestPt(pos){ let b=-1,bd=Infinity; pts.forEach((p,i)=>{const d=Math.hypot(p.x-pos.x,p.y-pos.y);if(d<bd){bd=d;b=i;}}); return bd<16?b:-1; }
+  function nearestHandle(pos){ let b=-1,bd=Infinity; handles.forEach((h,i)=>{const d=Math.hypot(h.x-pos.x,h.y-pos.y);if(d<bd){bd=d;b=i;}}); return bd<18?b:-1; }
+
+  canvas.addEventListener('mousedown',e=>{
+    e.preventDefault();
+    const pos=getPos(e);
+    const hi=nearestHandle(pos);
+    if(hi>=0){draggingHandle=hi;return;}
+    const pi=nearestPt(pos);
+    if(pi>=0){draggingPt=pi;return;}
+  });
+  canvas.addEventListener('mousemove',e=>{
+    const pos=getPos(e);
+    if(draggingHandle!==null){ handles[draggingHandle]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)}; draw(); }
+    else if(draggingPt!==null){ pts[draggingPt]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)}; draw(); }
+  });
+  canvas.addEventListener('mouseup',()=>{draggingPt=null;draggingHandle=null;});
+  canvas.addEventListener('mouseleave',()=>{draggingPt=null;draggingHandle=null;});
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();const pos=getPos(e);const hi=nearestHandle(pos);if(hi>=0){draggingHandle=hi;return;}const pi=nearestPt(pos);if(pi>=0)draggingPt=pi;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();const pos=getPos(e);if(draggingHandle!==null){handles[draggingHandle]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)};draw();}else if(draggingPt!==null){pts[draggingPt]={x:clamp(pos.x,PAD,W-PAD),y:clamp(pos.y,PAD,H-PAD)};draw();}},{passive:false});
+  canvas.addEventListener('touchend',()=>{draggingPt=null;draggingHandle=null;});
+
+  document.getElementById('bestFitBtn').addEventListener('click',()=>{
+    const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+    const {slope,intercept}=linReg(xs,ys);
+    handles[0]={x:PAD, y:slope*PAD+intercept};
+    handles[1]={x:W-PAD, y:slope*(W-PAD)+intercept};
+    draw();
+  });
+  document.getElementById('resetLinBtn').addEventListener('click',()=>{resetPts();draw();});
+
+  function drawLinear(){ draw(); }
+  window.drawLinear = drawLinear;
+  draw();
+})();
+
+/* ══════════════════════════════════════════════════════════
+   MULTIPLE REGRESSION CANVAS
+   ══════════════════════════════════════════════════════════ */
+(function(){
+  const canvas=document.getElementById('mulCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, PAD=50;
+
+  // 20 data points with two predictors x1,x2
+  let pts=[];
+  function initPts(){
+    pts=[];
+    for(let i=0;i<20;i++){
+      const x1=Math.random()*2-1;
+      const x2=Math.random()*2-1;
+      const y=0.8*x1+0.4*x2+(Math.random()-0.5)*0.6;
+      pts.push({x1,x2,y,dragging:false});
+    }
+  }
+  initPts();
+
+  let b0=0, b1=0.8, b2=0.4;
+  let draggingIdx=null;
+
+  // map x1 to screen X, y to screen Y (x2 encoded as vertical band colour)
+  function toScreen(x1,y){
+    const sx=PAD+(x1+1)/2*(W-2*PAD);
+    const sy=H-PAD-(y+1.5)/3*(H-2*PAD);
+    return {sx:clamp(sx,PAD,W-PAD), sy:clamp(sy,PAD,H-PAD)};
+  }
+  function fromScreen(sx,sy){
+    const x1=(sx-PAD)/(W-2*PAD)*2-1;
+    const y=-(sy-H+PAD)/(H-2*PAD)*3-1.5;
+    return {x1:clamp(x1,-1,1), y:clamp(y,-1.5,1.5)};
+  }
+
+  function predict(pt){ return b0+b1*pt.x1+b2*pt.x2; }
+
+  function computeR2(){
+    const preds=pts.map(predict);
+    const ys=pts.map(p=>p.y);
+    return r2(ys,preds);
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // gradient bg hint for x2
+    const grad=ctx.createLinearGradient(PAD,0,W-PAD,0);
+    grad.addColorStop(0,'rgba(239,203,158,0.04)');
+    grad.addColorStop(1,'rgba(239,203,158,0.00)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(PAD,PAD,W-2*PAD,H-2*PAD);
+
+    // grid
+    ctx.strokeStyle='rgba(3,12,44,0.8)'; ctx.lineWidth=1;
+    for(let gx=PAD;gx<=W-PAD;gx+=(W-2*PAD)/6){ctx.beginPath();ctx.moveTo(gx,PAD);ctx.lineTo(gx,H-PAD);ctx.stroke();}
+    for(let gy=PAD;gy<=H-PAD;gy+=(H-2*PAD)/5){ctx.beginPath();ctx.moveTo(PAD,gy);ctx.lineTo(W-PAD,gy);ctx.stroke();}
+
+    // axes
+    ctx.strokeStyle='rgba(239,203,158,0.15)'; ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(PAD,H-PAD);ctx.lineTo(W-PAD,H-PAD);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(PAD,PAD);ctx.lineTo(PAD,H-PAD);ctx.stroke();
+
+    // axis labels
+    ctx.fillStyle='rgba(229,229,229,0.5)'; ctx.font='12px Inter, sans-serif';
+    ctx.fillText('X₁', W-PAD+8, H-PAD+4);
+    ctx.fillText('Ŷ', PAD-16, PAD-8);
+
+    // predicted regression line (at average x2=0)
+    const x1L=-1, x1R=1;
+    const yL=b0+b1*x1L+b2*0;
+    const yR=b0+b1*x1R+b2*0;
+    const {sx:sx0,sy:sy0}=toScreen(x1L,yL);
+    const {sx:sx1,sy:sy1}=toScreen(x1R,yR);
+    ctx.beginPath(); ctx.moveTo(sx0,sy0); ctx.lineTo(sx1,sy1);
+    ctx.strokeStyle='rgba(239,203,158,0.8)'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // residual lines + points
+    pts.forEach((p,i)=>{
+      const {sx,sy}=toScreen(p.x1,p.y);
+      const py=predict(p);
+      const {sx:spx,sy:spy}=toScreen(p.x1,py);
+      // residual
+      ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(spx,spy);
+      ctx.strokeStyle='rgba(239,203,158,0.2)'; ctx.lineWidth=1.5; ctx.stroke();
+
+      // color by x2
+      const t=(p.x2+1)/2;
+      const alpha = 0.5 + t*0.45;
+      ctx.beginPath(); ctx.arc(sx,sy,i===draggingIdx?10:7,0,Math.PI*2);
+      ctx.fillStyle=`rgba(239,203,158,${alpha})`; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1.5; ctx.stroke();
+    });
+
+    document.getElementById('mul-r2').textContent=computeR2().toFixed(3);
+  }
+
+  function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    const sx=W/rect.width, sy=H/rect.height;
+    const cx=(e.clientX??e.touches[0].clientX)-rect.left;
+    const cy=(e.clientY??e.touches[0].clientY)-rect.top;
+    return {x:cx*sx, y:cy*sy};
+  }
+
+  canvas.addEventListener('mousedown',e=>{
+    const pos=getPos(e);
+    let best=-1, bd=Infinity;
+    pts.forEach((p,i)=>{
+      const {sx,sy}=toScreen(p.x1,p.y);
+      const d=Math.hypot(sx-pos.x,sy-pos.y);
+      if(d<bd){bd=d;best=i;}
+    });
+    if(bd<18) draggingIdx=best;
+  });
+  canvas.addEventListener('mousemove',e=>{
+    if(draggingIdx===null) return;
+    const pos=getPos(e);
+    const {x1,y}=fromScreen(pos.x,pos.y);
+    pts[draggingIdx].x1=x1;
+    pts[draggingIdx].y=y;
+    draw();
+  });
+  canvas.addEventListener('mouseup',()=>draggingIdx=null);
+  canvas.addEventListener('mouseleave',()=>draggingIdx=null);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();const pos=getPos(e);let best=-1,bd=Infinity;pts.forEach((p,i)=>{const{sx,sy}=toScreen(p.x1,p.y);const d=Math.hypot(sx-pos.x,sy-pos.y);if(d<bd){bd=d;best=i;}});if(bd<18)draggingIdx=best;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(draggingIdx===null)return;const pos=getPos(e);const{x1,y}=fromScreen(pos.x,pos.y);pts[draggingIdx].x1=x1;pts[draggingIdx].y=y;draw();},{passive:false});
+  canvas.addEventListener('touchend',()=>draggingIdx=null);
+
+  // sliders
+  function syncSliders(){
+    b1=parseFloat(document.getElementById('b1').value);
+    b2=parseFloat(document.getElementById('b2').value);
+    b0=parseFloat(document.getElementById('b0').value);
+    document.getElementById('b1val').textContent=b1.toFixed(2);
+    document.getElementById('b2val').textContent=b2.toFixed(2);
+    document.getElementById('b0val').textContent=b0.toFixed(2);
+    draw();
+  }
+  ['b1','b2','b0'].forEach(id=>document.getElementById(id).addEventListener('input',syncSliders));
+
+  function drawMultiple(){ draw(); }
+  window.drawMultiple = drawMultiple;
+  draw();
+})();
+</script>
+</body>
+</html>
