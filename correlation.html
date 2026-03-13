@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>D3.js Interactive Scatter Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <script>
+        // Sample data generation
+let data = Array.from({length: 20}, () => ({x: Math.random() * 100, y: Math.random() * 100}));
+
+// Set up dimensions
+const margin = {top: 20, right: 30, bottom: 40, left: 50};
+const width = 500 - margin.left - margin.right;
+const height = 500 - margin.top - margin.bottom;
+
+// Create scales
+const xScale = d3.scaleLinear().domain([0, 100]).range([0, width]);
+const yScale = d3.scaleLinear().domain([0, 100]).range([height, 0]);
+
+// Create SVG element
+const svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Create axes
+svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale));
+
+svg.append("g")
+    .call(d3.axisLeft(yScale));
+
+// Function to update Pearson Correlation Coefficient
+function updateCorrelation() {
+    let meanX = d3.mean(data, d => d.x);
+    let meanY = d3.mean(data, d => d.y);
+    let numerator = d3.sum(data, d => (d.x - meanX) * (d.y - meanY));
+    let denominator = Math.sqrt(d3.sum(data, d => Math.pow(d.x - meanX, 2)) * d3.sum(data, d => Math.pow(d.y - meanY, 2)));
+    let r = numerator / denominator;
+    d3.select("#correlation").text("Pearson Correlation: " + r.toFixed(2));
+}
+
+function dragstarted(event, d) {
+  d3.select(this).raise().classed("active", true);
+}
+
+function dragged(event, d) {
+  d.x += xScale.invert(event.dx) - xScale.invert(0);
+  d.y += yScale.invert(event.dy) - yScale.invert(0);
+  d3.select(this)
+    .attr("cx", xScale(d.x))
+    .attr("cy", yScale(d.y));
+  updateCorrelation();
+}
+
+function dragended(event, d) {
+  d3.select(this).classed("active", false)
+    .transition()
+    .duration(1000)
+    .ease(d3.easeElasticOut)
+    .attr("cx", xScale(d.x))
+    .attr("cy", yScale(d.y));
+}
+
+// Create circles
+svg.selectAll("circle")
+    .data(data)
+  .enter().append("circle")
+    .attr("cx", d => xScale(d.x))
+    .attr("cy", d => yScale(d.y))
+    .attr("r", 5)
+    .style("fill", "steelblue")
+    .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+		.on("end", dragended));
+
+// Add Pearson Correlation Coefficient text
+svg.append("text")
+    .attr("id", "correlation")
+    .attr("x", width - 200)
+    .attr("y", 30)
+    .style("font-size", "16px")
+    .style("font-weight", "bold");
+
+// Initial update of correlation
+updateCorrelation();
+
+    </script>
+</body>
+</html>
