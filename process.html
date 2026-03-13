@@ -519,5 +519,20 @@
 
   items.forEach(item => observer.observe(item));
 </script>
+ <script>
+function sendHeight() {
+  const height = document.body.scrollHeight;
+
+  parent.postMessage({
+    type: "resize-iframe",
+    height: height
+  }, "*");
+}
+
+window.onload = sendHeight;
+window.onresize = sendHeight;
+
+new ResizeObserver(sendHeight).observe(document.body);
+</script>
 </body>
 </html>
