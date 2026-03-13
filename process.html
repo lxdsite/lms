@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TF-IDF Process</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000000;
+    --surface: #030C2C;
+    --surface2: #0a1540;
+    --border: rgba(239,203,158,0.2);
+    --accent: #EFCB9E;
+    --muted: #E5E5E5;
+    --text: #FFFFFF;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    grid-column: 1 / -1;
+    padding: 48px 48px 36px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  header p.label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  header h1 span { color: var(--accent); }
+  header p.sub {
+    margin-top: 10px;
+    font-size: 0.88rem;
+    font-weight: 300;
+    color: var(--muted);
+    opacity: 0.7;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────── */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 40px 28px;
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    align-self: start;
+  }
+  aside h3 {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+  .step-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .step-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.22s ease;
+    text-decoration: none;
+  }
+  .step-nav-item:hover {
+    background: rgba(239,203,158,0.06);
+    border-color: var(--border);
+  }
+  .step-nav-item.active {
+    background: rgba(239,203,158,0.1);
+    border-color: rgba(239,203,158,0.35);
+  }
+  .step-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(239,203,158,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: all 0.22s ease;
+  }
+  .step-nav-item.active .step-num {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+  .step-nav-item:hover:not(.active) .step-num {
+    border-color: rgba(239,203,158,0.6);
+    color: var(--accent);
+  }
+  .step-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    line-height: 1.3;
+    transition: color 0.22s;
+  }
+  .step-nav-item.active .step-label { color: var(--text); }
+
+  /* connector line */
+  .step-connector {
+    width: 1.5px;
+    height: 18px;
+    background: linear-gradient(to bottom, rgba(239,203,158,0.2), rgba(239,203,158,0.05));
+    margin-left: 28px;
+  }
+
+  /* ── MAIN CONTENT ───────────────────────── */
+  main {
+    padding: 48px 52px;
+    max-width: 740px;
+  }
+
+  /* ── ACCORDION ──────────────────────────── */
+  .accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .acc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+  .acc-item.open {
+    border-color: rgba(239,203,158,0.4);
+    box-shadow: 0 0 0 1px rgba(239,203,158,0.08), 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .acc-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 26px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+  }
+  .acc-trigger:hover { background: rgba(239,203,158,0.04); }
+
+  .acc-step-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(239,203,158,0.08);
+    border: 1.5px solid rgba(239,203,158,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+  .acc-item.open .acc-step-badge {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+  }
+
+  .acc-title-group { flex: 1; }
+  .acc-step-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 3px;
+    transition: opacity 0.2s;
+  }
+  .acc-item.open .acc-step-label { opacity: 1; }
+  .acc-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .acc-arrow {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    color: rgba(239,203,158,0.4);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), color 0.2s;
+  }
+  .acc-item.open .acc-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+
+  /* ── ACCORDION BODY ─────────────────────── */
+  .acc-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .acc-item.open .acc-body {
+    grid-template-rows: 1fr;
+  }
+  .acc-body-inner {
+    overflow: hidden;
+  }
+  .acc-content {
+    padding: 0 26px 28px 80px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    font-weight: 300;
+  }
+  .acc-content p { margin-bottom: 0; }
+  .acc-content strong, .acc-content b {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .acc-content .highlight {
+    display: inline-block;
+    background: rgba(239,203,158,0.1);
+    border: 1px solid rgba(239,203,158,0.25);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-family: 'Inter', monospace;
+    font-size: 0.82em;
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* formula chip */
+  .formula-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239,203,158,0.06);
+    border: 1px solid rgba(239,203,158,0.2);
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin-top: 14px;
+    font-size: 0.88rem;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .formula-chip .dot { opacity: 0.5; }
+
+  /* divider */
+  .acc-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 26px;
+  }
+  .acc-item.open .acc-divider { background: rgba(239,203,158,0.15); }
+
+  /* scroll-margin for offset */
+  .acc-item { scroll-margin-top: 40px; }
+
+  /* ── SCROLLBAR ──────────────────────────── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(239,203,158,0.15); border-radius: 3px; }
+
+  /* ── RESPONSIVE ─────────────────────────── */
+  @media (max-width: 700px) {
+    body { grid-template-columns: 1fr; }
+    aside { display: none; }
+    header { padding: 32px 24px 24px; }
+    main { padding: 32px 20px; }
+    .acc-content { padding-left: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="label">Natural Language Processing</p>
+  <h1>TF-IDF <span>Process</span></h1>
+  <p class="sub">Follow each step to understand how Term Frequency–Inverse Document Frequency works — from raw text to weighted word importance.</p>
+</header>
+
+<!-- SIDEBAR NAV -->
+<aside>
+  <h3>Steps</h3>
+  <nav class="step-nav" id="stepNav">
+    <a class="step-nav-item active" data-target="step1" href="#step1">
+      <div class="step-num">1</div>
+      <div class="step-label">Tokenization</div>
+    </a>
+    <div class="step-connector"></div>
+    <a class="step-nav-item" data-target="step2" href="#step2">
+      <div class="step-num">2</div>
+      <div class="step-label">Measure TF</div>
+    </a>
+    <div class="step-connector"></div>
+    <a class="step-nav-item" data-target="step3" href="#step3">
+      <div class="step-num">3</div>
+      <div class="step-label">Measure IDF</div>
+    </a>
+    <div class="step-connector"></div>
+    <a class="step-nav-item" data-target="step4" href="#step4">
+      <div class="step-num">4</div>
+      <div class="step-label">Calculate TF-IDF</div>
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN ACCORDION -->
+<main>
+  <div class="accordion">
+
+    <!-- STEP 1 -->
+    <div class="acc-item open" id="step1">
+      <button class="acc-trigger" aria-expanded="true">
+        <div class="acc-step-badge">1</div>
+        <div class="acc-title-group">
+          <div class="acc-step-label">Step 1</div>
+          <div class="acc-title">Tokenization</div>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="acc-divider"></div>
+      <div class="acc-body">
+        <div class="acc-body-inner">
+          <div class="acc-content">
+            <p>Before applying TF-IDF to assess word importance, we first need to <strong>tokenize</strong> the text — breaking it down into individual words. Then, we <strong>normalize</strong> it by removing punctuation and capital letters, followed by filtering out <strong>stop words</strong> such as <span class="highlight">'and'</span> or <span class="highlight">'the'</span> that do not provide meaningful information.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="acc-item" id="step2">
+      <button class="acc-trigger" aria-expanded="false">
+        <div class="acc-step-badge">2</div>
+        <div class="acc-title-group">
+          <div class="acc-step-label">Step 2</div>
+          <div class="acc-title">Measure TF</div>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="acc-divider"></div>
+      <div class="acc-body">
+        <div class="acc-body-inner">
+          <div class="acc-content">
+            <p>After the information is prepared, each word is measured by its <strong>frequency of appearance</strong> in a specific document, known as <strong>Term Frequency (TF)</strong>. A word that appears often in a document receives a higher TF score.</p>
+            <div class="formula-chip">
+              TF(t, d) <span class="dot">·</span> = count of t in d ÷ total words in d
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="acc-item" id="step3">
+      <button class="acc-trigger" aria-expanded="false">
+        <div class="acc-step-badge">3</div>
+        <div class="acc-title-group">
+          <div class="acc-step-label">Step 3</div>
+          <div class="acc-title">Measure IDF</div>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="acc-divider"></div>
+      <div class="acc-body">
+        <div class="acc-body-inner">
+          <div class="acc-content">
+            <p>Measuring using TF alone is not enough, as some words may appear across <strong>multiple documents</strong>. To address this, <strong>Inverse Document Frequency (IDF)</strong> is introduced to calculate the importance of a word by <strong>reducing the weight of common words</strong> across documents.</p>
+            <p style="margin-top:12px">A word with a high TF but low IDF — such as <span class="highlight">'and'</span> — will have a low overall TF-IDF score.</p>
+            <div class="formula-chip">
+              IDF(t) <span class="dot">·</span> = log( N ÷ df(t) )
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="acc-item" id="step4">
+      <button class="acc-trigger" aria-expanded="false">
+        <div class="acc-step-badge">4</div>
+        <div class="acc-title-group">
+          <div class="acc-step-label">Step 4</div>
+          <div class="acc-title">Calculate TF-IDF</div>
+        </div>
+        <svg class="acc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div class="acc-divider"></div>
+      <div class="acc-body">
+        <div class="acc-body-inner">
+          <div class="acc-content">
+            <p>Finally, by <strong>multiplying TF and IDF</strong>, we can determine the most relevant words in a document. Higher TF-IDF scores signify greater importance — the word is both frequent in this document and rare across the corpus.</p>
+            <div class="formula-chip">
+              TF-IDF(t, d) <span class="dot">·</span> = TF(t, d) × IDF(t)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const items = document.querySelectorAll('.acc-item');
+  const navItems = document.querySelectorAll('.step-nav-item');
+
+  // ── ACCORDION TOGGLE ──────────────────────────
+  items.forEach(item => {
+    const trigger = item.querySelector('.acc-trigger');
+    trigger.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      // Close all
+      items.forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.acc-trigger').setAttribute('aria-expanded', 'false');
+      });
+      // Open clicked if it was closed
+      if (!isOpen) {
+        item.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        syncNav(item.id);
+      }
+    });
+  });
+
+  // ── SIDEBAR NAV CLICK ─────────────────────────
+  navItems.forEach(nav => {
+    nav.addEventListener('click', e => {
+      e.preventDefault();
+      const targetId = nav.dataset.target;
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      // Open the accordion
+      items.forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.acc-trigger').setAttribute('aria-expanded', 'false');
+      });
+      target.classList.add('open');
+      target.querySelector('.acc-trigger').setAttribute('aria-expanded', 'true');
+
+      // Scroll to it
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      syncNav(targetId);
+    });
+  });
+
+  function syncNav(activeId) {
+    navItems.forEach(n => {
+      n.classList.toggle('active', n.dataset.target === activeId);
+    });
+  }
+
+  // ── SCROLL SPY ────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+        syncNav(entry.target.id);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  items.forEach(item => observer.observe(item));
+</script>
+</body>
+</html>
