@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technological Paradigms & Innovation — Learning Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swapfamily=DM+Sans:wght@300;400;500https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swapfamily=DM+Mono:wght@400;500https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swapdisplay=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #111008;
+    --rust: #B03A1F;
+    --amber: #7A4E10;
+    --muted: #5A5549;
+    --border: rgba(17,16,8,0.12);
+    --card-bg: rgba(17,16,8,0.03);
+    --card-hover: rgba(17,16,8,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(17,16,8,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+  }
+  .nav-dot.active {
+    background: var(--amber);
+    transform: scale(1.5);
+  }
+  .nav-dot:hover { background: var(--ink); }
+  .nav-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nav-dot:hover::after { opacity: 1; }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-inner {
+    max-width: 860px;
+    width: 100%;
+    z-index: 2;
+  }
+
+  /* SECTION NUMBER */
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sec-num::after {
+    content: '';
+    flex: 0 0 40px;
+    height: 1px;
+    background: var(--amber);
+    opacity: 0.4;
+  }
+
+  h1 { font-family: 'Inter', sans-serif; color: var(--ink); }
+  h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(28px, 4vw, 48px);
+    line-height: 1.15;
+    margin-bottom: 28px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.85;
+    color: #2E2C27;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+
+  .highlight {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 4px;
+    background: var(--card-bg);
+    transition: background 0.3s;
+  }
+  .card:hover { background: var(--card-hover); }
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+  .card p { font-size: 14px; margin: 0; color: #3A3830; }
+
+  /* LIMITATION BOX */
+  .limit-box {
+    border-left: 3px solid var(--rust);
+    padding: 16px 20px;
+    background: rgba(176,58,31,0.05);
+    border-radius: 0 4px 4px 0;
+    margin-top: 20px;
+  }
+  .limit-box p { font-size: 14px; margin-bottom: 8px; color: #3A3830; }
+  .limit-box p:last-child { margin-bottom: 0; }
+  .limit-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 48px; height: 2px;
+    background: var(--amber);
+    margin: 24px 0;
+    opacity: 0.5;
+  }
+
+  /* INTRO */
+  .intro-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(38px, 6vw, 72px);
+    line-height: 1.05;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .intro-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 36px;
+  }
+
+  .bg-shape {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(122,78,16,0.05) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.25;
+    animation: bounce 2s infinite;
+  }
+  .scroll-hint span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .scroll-arrow { width: 1px; height: 40px; background: var(--ink); }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* HYPE CYCLE */
+  .hype-stages {
+    display: flex;
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .hype-stage {
+    flex: 1;
+    padding: 16px 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+  .hype-stage:last-child { border-right: none; }
+  .hype-stage:hover { background: var(--card-bg); }
+  .hype-stage .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    color: var(--amber);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .hype-stage .label { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* FADE IN */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    section { padding: 60px 24px; }
+    .nav-dots { right: 12px; }
+    .hype-stages { flex-direction: column; }
+    .hype-stage { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- INTRO -->
+<section id="s0">
+  <div class="bg-shape"></div>
+  <div class="section-inner fade-in">
+    <p class="intro-subtitle">Module Recap — Innovation & Technology</p>
+    <h1 class="intro-title">Technological<br>Paradigms &<br>Adoption Trends</h1>
+    <div class="divider"></div>
+    <p>A concise summary of the core frameworks and theories explored in this module — from how technologies evolve to how organisations and people adopt them.</p>
+    <p style="color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em;">8 topics · Scroll to explore</p>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-arrow"></div></div>
+</section>
+
+<!-- DOSI -->
+<section id="s1">
+  <div class="section-inner fade-in">
+    <div class="sec-num">01 &nbsp; Dosi (1982)</div>
+    <h2>Technological Paradigms & Trajectories</h2>
+    <p>Giovanni Dosi argued that technological change is not random — it follows structured paths. A <span class="highlight">technological paradigm</span> is a shared model or blueprint that defines what problems to solve and how to solve them (analogous to Kuhn's scientific paradigms). Think of it as the "rulebook" an industry unconsciously follows.</p>
+    <p>Within a paradigm, progress moves along a <span class="highlight">technological trajectory</span> — the specific direction of improvement over time (e.g., faster chips, smaller devices). Most innovation is incremental, happening within the trajectory. Radical change only occurs when a paradigm is overthrown entirely.</p>
+    <p>This explains why dominant designs persist, why firms get locked in, and why breakthrough innovations are so disruptive — they don't just improve the product, they rewrite the rulebook.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>Dosi's framework is better at explaining past trajectories than predicting future ones. It underplays the role of demand, user behaviour, and policy in shaping technological paths. It can also imply technological determinism — as if markets have no choice but to follow a trajectory.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LEARNING SPILLOVERS -->
+<section id="s2">
+  <div class="section-inner fade-in">
+    <div class="sec-num">02 &nbsp; Bommel et al.</div>
+    <h2>Learning Spillovers & Affordable Loss</h2>
+    <p>Bommel et al. introduced the concept of <span class="highlight">learning spillovers</span> — the idea that knowledge and insights generated in one context "spill over" to benefit adjacent areas, teams, or organisations, often unintentionally. Innovations rarely stay contained; learning leaks, and that leakage can accelerate broader adoption.</p>
+    <p>Linked to this is the principle of <span class="highlight">affordable loss</span>: rather than projecting expected returns before acting, innovators should ask "how much am I willing to lose?" This reframes risk. It encourages experimentation because failure is bounded — you only risk what you can afford, not what you hope to gain.</p>
+    <p>Together, these ideas support a learn-by-doing culture: small, low-stakes trials that generate spillover insights are more generative than large, high-stakes bets.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>Affordable loss can be misread as an excuse for underinvestment. Spillovers also benefit competitors as much as collaborators, raising IP and competitive moat concerns. The framework works best in early-stage exploration, not at scale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EASY TO DIFFICULT -->
+<section id="s3">
+  <div class="section-inner fade-in">
+    <div class="sec-num">03 &nbsp; Bommel et al.</div>
+    <h2>Easy-to-Difficult Trials</h2>
+    <p>Bommel et al. advocate for sequencing innovation experiments from <span class="highlight">easy to difficult</span> — starting with low-complexity, high-probability-of-success trials before escalating to harder challenges. This is not timidity; it's strategic momentum-building.</p>
+    <p>Early wins create confidence, organisational buy-in, and proof of concept. They also surface unexpected variables in a low-risk environment, so that by the time harder trials begin, the team is better informed and more resilient to failure.</p>
+    <p>This sequencing mirrors how learners build mastery — and applies equally to product pilots, R&D roadmaps, and change management in organisations adopting new technologies.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>The "easy first" logic can create a false sense of security — what's easy in a lab may be hard in a real market. There's also a risk of spending too long in the easy zone, delaying the critical learning that only comes from harder, messier trials.</p>
+    </div>
+  </div>
+</section>
+
+<!-- OVERFEATURING -->
+<section id="s4">
+  <div class="section-inner fade-in">
+    <div class="sec-num">04 &nbsp; Product Development</div>
+    <h2>Overfeaturing in New Products</h2>
+    <p><span class="highlight">Overfeaturing</span> occurs when products are loaded with more features than users need, want, or can navigate — driven by engineering ambition, competitive pressure, or misread market signals. The result is bloated products that confuse rather than delight.</p>
+    <p>The <span class="highlight">stage-gate view</span> of overfeaturing identifies how each development phase becomes a battleground where new features are added but rarely removed. Without a ruthless prioritisation mechanism, every gate becomes an accumulation point rather than a filter.</p>
+    <div class="card-grid">
+      <div class="card"><div class="card-title">Why It Happens</div><p>Fear of missing out on edge-case users, internal politics, and the "more = better" assumption.</p></div>
+      <div class="card"><div class="card-title">The Cost</div><p>Higher cognitive load, slower adoption, increased development cost, and diluted core value.</p></div>
+      <div class="card"><div class="card-title">The Fix</div><p>Jobs-to-be-done framing, MVP discipline, and user-led feature validation at each gate.</p></div>
+    </div>
+    <div class="limit-box" style="margin-top: 20px;">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>Stage-gate models can be too linear for fast-moving markets. The "right" feature set is deeply context-dependent, and lean approaches risk under-building for sophisticated users.</p>
+    </div>
+  </div>
+</section>
+
+<!-- IoT -->
+<section id="s5">
+  <div class="section-inner fade-in">
+    <div class="sec-num">05 &nbsp; IoT</div>
+    <h2>IoT Paradigm Absorption</h2>
+    <p>The <span class="highlight">Internet of Things (IoT)</span> represents a full paradigm shift in Dosi's terms — not just a new product category, but a new rulebook for how objects, data, and people interact. IoT absorption describes how industries, organisations, and societies gradually internalise this paradigm into their operations and mental models.</p>
+    <p>Absorption is not instant. It moves through phases: awareness → experimentation → integration → dependence. Most organisations today sit somewhere between experimentation and integration, still grappling with interoperability, data governance, and skills gaps.</p>
+    <p>What makes IoT uniquely challenging is that its value is <span class="highlight">emergent</span> — it only appears when devices, platforms, and people connect at scale. This makes early ROI hard to demonstrate, slowing adoption despite the technology's maturity.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>IoT adoption is hampered by fragmentation — incompatible standards, vendor lock-in, and security vulnerabilities. Measuring "absorption" is also difficult; surface-level adoption (connected devices) can mask shallow organisational integration.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GARTNER -->
+<section id="s6">
+  <div class="section-inner fade-in">
+    <div class="sec-num">06 &nbsp; Gartner</div>
+    <h2>The Hype Cycle</h2>
+    <p>Gartner's Hype Cycle is a visual model describing how technologies move from invention to mainstream adoption — and why the journey is rarely smooth. It maps the <span class="highlight">emotional and market journey</span> of a technology through five stages.</p>
+    <div class="hype-stages">
+      <div class="hype-stage"><div class="num">1</div><div class="label">Technology Trigger</div></div>
+      <div class="hype-stage"><div class="num">2</div><div class="label">Peak of Inflated Expectations</div></div>
+      <div class="hype-stage"><div class="num">3</div><div class="label">Trough of Disillusionment</div></div>
+      <div class="hype-stage"><div class="num">4</div><div class="label">Slope of Enlightenment</div></div>
+      <div class="hype-stage"><div class="num">5</div><div class="label">Plateau of Productivity</div></div>
+    </div>
+    <p style="margin-top: 20px;">The Trough of Disillusionment mirrors the Valley of Dissolution — the danger zone where early hype crashes into real-world complexity. Survivors of this trough emerge with realistic, sustainable adoption. Those who can't wait, invest during the trough when assets are undervalued.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>The Hype Cycle is descriptive, not predictive — it can't tell you where a technology currently sits or how long each phase lasts. It also treats all technologies as following the same arc, ignoring how context, regulation, and competition alter the curve dramatically.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GenAI -->
+<section id="s7">
+  <div class="section-inner fade-in">
+    <div class="sec-num">07 &nbsp; GenAI</div>
+    <h2>GenAI as a Technological Paradigm</h2>
+    <p>Generative AI is not merely a new tool — through Dosi's lens, it represents an emerging <span class="highlight">technological paradigm</span>: a new model that redefines what is possible, what problems are worth solving, and how knowledge work is organised. Its trajectory is still being defined, but the direction is clear: from automation of tasks to augmentation of cognition.</p>
+    <p>Adoption trends mirror Rogers' diffusion curve. Innovators (researchers, startups) embraced GenAI early. Early Adopters (tech-forward enterprises) are now integrating it into workflows. The Early Majority — cautious, ROI-focused organisations — are beginning to cross in. Late Majority and Laggards remain sceptical, often citing hallucination risks, job displacement fears, and compliance uncertainty.</p>
+    <p>On the Hype Cycle, GenAI likely peaked around 2023–2024 and is now descending toward the Trough — where realistic value assessment will separate genuine transformation from overpromised potential.</p>
+    <div class="limit-box">
+      <div class="limit-label">⚠ Limitations</div>
+      <p>GenAI adoption is uneven across sectors and geographies. Hallucination, bias, and energy costs remain unresolved. The paradigm framing can overstate coherence — GenAI is a cluster of diverse technologies, not a single unified shift. Regulatory frameworks are still forming, creating adoption uncertainty.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SYNTHESIS -->
+<section id="s8">
+  <div class="section-inner fade-in">
+    <div class="sec-num">08 &nbsp; Synthesis</div>
+    <h2>Putting It All Together</h2>
+    <p>These frameworks are not isolated theories — they form an interconnected lens for understanding how technologies emerge, spread, stall, and ultimately reshape industries.</p>
+    <div class="card-grid">
+      <div class="card"><div class="card-title">How Tech Evolves</div><p>Dosi's paradigms and trajectories explain the structured, path-dependent nature of technological progress.</p></div>
+      <div class="card"><div class="card-title">How Adoption Happens</div><p>Rogers, Gladwell, and the Hype Cycle map the social and emotional journey from invention to mainstream use.</p></div>
+      <div class="card"><div class="card-title">How Organisations Learn</div><p>Bommel's affordable loss and easy-to-difficult trials offer practical strategies for navigating uncertainty.</p></div>
+      <div class="card"><div class="card-title">Where It Can Go Wrong</div><p>Overfeaturing, the Valley of Dissolution, and the Trough of Disillusionment mark the failure points to navigate.</p></div>
+    </div>
+    <div class="divider" style="margin-top: 32px;"></div>
+    <p style="color: var(--muted); font-size: 14px;">The most resilient innovators understand both the technical trajectory they're riding <em>and</em> the human adoption journey they must navigate. Neither is sufficient alone.</p>
+  </div>
+</section>
+
+<script>
+  const sections = [
+    { id: 's0', label: 'Intro' },
+    { id: 's1', label: 'Dosi' },
+    { id: 's2', label: 'Spillovers' },
+    { id: 's3', label: 'Easy→Difficult' },
+    { id: 's4', label: 'Overfeaturing' },
+    { id: 's5', label: 'IoT' },
+    { id: 's6', label: 'Hype Cycle' },
+    { id: 's7', label: 'GenAI' },
+    { id: 's8', label: 'Synthesis' },
+  ];
+
+  const nav = document.getElementById('navDots');
+  sections.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-dot';
+    btn.setAttribute('data-label', s.label);
+    btn.addEventListener('click', () => document.getElementById(s.id).scrollIntoView({ behavior: 'smooth' }));
+    nav.appendChild(btn);
+  });
+
+  const dots = document.querySelectorAll('.nav-dot');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = sections.findIndex(s => s.id === entry.target.id);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        entry.target.querySelectorAll('.fade-in').forEach((el, i) => {
+          setTimeout(() => el.classList.add('visible'), i * 80);
+        });
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(s => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+
+  new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 }).observe(document.querySelector('#s0 .fade-in'));
+</script>
+</body>
+</html>
