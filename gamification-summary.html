@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gamification & Innovation Adoption — Learning Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #111008;
+    --rust: #B03A1F;
+    --amber: #7A4E10;
+    --muted: #5A5549;
+    --border: rgba(17,16,8,0.12);
+    --card-bg: rgba(17,16,8,0.03);
+    --card-hover: rgba(17,16,8,0.06);
+    --blue: #1A4A7A;
+    --blue-light: #EEF4FB;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed;
+    right: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(17,16,8,0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+  }
+  .nav-dot.active { background: var(--amber); transform: scale(1.5); }
+  .nav-dot:hover { background: var(--ink); }
+  .nav-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .nav-dot:hover::after { opacity: 1; }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-inner { max-width: 860px; width: 100%; z-index: 2; }
+
+  .sec-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sec-num::after {
+    content: '';
+    flex: 0 0 40px;
+    height: 1px;
+    background: var(--amber);
+    opacity: 0.4;
+  }
+
+  h1 { font-family: 'Inter', sans-serif; color: var(--ink); }
+  h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(26px, 3.5vw, 44px);
+    line-height: 1.18;
+    margin-bottom: 28px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.85;
+    color: #2E2C27;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+
+  .highlight { color: var(--amber); font-weight: 600; }
+
+  /* CARDS */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 4px;
+    background: var(--card-bg);
+    transition: background 0.3s;
+  }
+  .card:hover { background: var(--card-hover); }
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+  .card p { font-size: 14px; margin: 0; color: #3A3830; }
+
+  /* ADDITIONAL INFO BOX */
+  .addl-box {
+    border: 1px dashed rgba(17,16,8,0.2);
+    padding: 16px 20px;
+    background: rgba(17,16,8,0.02);
+    border-radius: 4px;
+    margin-top: 28px;
+  }
+  .addl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .addl-box p { font-size: 13.5px; color: #4A4840; margin-bottom: 8px; }
+  .addl-box p:last-child { margin-bottom: 0; }
+
+  /* LIMITATION BOX */
+  .limit-box {
+    border-left: 3px solid var(--rust);
+    padding: 16px 20px;
+    background: rgba(176,58,31,0.05);
+    border-radius: 0 4px 4px 0;
+    margin-top: 20px;
+  }
+  .limit-box p { font-size: 14px; margin-bottom: 10px; color: #3A3830; }
+  .limit-box p:last-child { margin-bottom: 0; }
+  .limit-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  /* POSITIVE NOTE BOX */
+  .note-box {
+    border-left: 3px solid #1A6B3C;
+    padding: 16px 20px;
+    background: rgba(26,107,60,0.05);
+    border-radius: 0 4px 4px 0;
+    margin-top: 20px;
+  }
+  .note-box p { font-size: 14px; margin-bottom: 8px; color: #1A3A2C; }
+  .note-box p:last-child { margin-bottom: 0; }
+  .note-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #1A6B3C;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 48px; height: 2px;
+    background: var(--amber);
+    margin: 24px 0;
+    opacity: 0.5;
+  }
+
+  /* INTRO */
+  .intro-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(36px, 5.5vw, 68px);
+    line-height: 1.05;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .intro-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 36px;
+  }
+
+  .bg-shape {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(122,78,16,0.05) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.25;
+    animation: bounce 2s infinite;
+  }
+  .scroll-hint span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .scroll-arrow { width: 1px; height: 40px; background: var(--ink); }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* COMPARISON TABLE — no examples column */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .compare-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: white;
+    background: var(--ink);
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .compare-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: #3A3830;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .compare-table tr:nth-child(even) td { background: var(--card-bg); }
+  .compare-table tr:hover td { background: var(--card-hover); }
+  .compare-table td:first-child { font-weight: 600; color: var(--amber); white-space: nowrap; }
+
+  /* FACEBOOK EXAMPLE BLOCK */
+  .fb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .fb-card {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    background: var(--card-bg);
+    transition: background 0.3s;
+  }
+  .fb-card:hover { background: var(--card-hover); }
+  .fb-drive {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 5px;
+  }
+  .fb-mechanic {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+  .fb-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* REFINERY CASE BOX */
+  .case-box {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 22px;
+    background: var(--card-bg);
+    margin-top: 20px;
+  }
+  .case-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .case-box p { font-size: 14.5px; color: #2E2C27; margin-bottom: 10px; }
+  .case-box p:last-child { margin-bottom: 0; }
+
+  /* FADE IN */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    section { padding: 60px 24px; }
+    .nav-dots { right: 12px; }
+    .compare-table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- INTRO -->
+<section id="s0">
+  <div class="bg-shape"></div>
+  <div class="section-inner fade-in">
+    <p class="intro-subtitle">Module Recap — Gamification & Innovation</p>
+    <h1 class="intro-title">Gamification &<br>Innovation<br>Adoption</h1>
+    <div class="divider"></div>
+    <p>A focused summary of how gamification works, why it accelerates adoption, and how to apply it with intention — from core concepts to the Octalysis framework in action.</p>
+    <p style="color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em;">6 topics · Scroll to explore</p>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-arrow"></div></div>
+</section>
+
+<!-- SECTION 1: WHAT IS GAMIFICATION -->
+<section id="s1">
+  <div class="section-inner fade-in">
+    <div class="sec-num">01 &nbsp; Foundation</div>
+    <h2>What is Gamification — and Why Does It Matter for Innovation Adoption?</h2>
+    <p><span class="highlight">Gamification</span> is the application of game design elements and mechanics — points, badges, leaderboards, progress bars, challenges, and feedback loops — to non-game contexts with the goal of driving engagement, behaviour change, and sustained participation.</p>
+    <p>In the context of innovation adoption, gamification addresses one of the most persistent challenges: the gap between awareness and sustained use. People may understand a new product intellectually and still not adopt it, because adoption requires <span class="highlight">repeated behaviour change</span> — not just a single decision. Gamification bridges this gap by making the process of learning and adopting intrinsically rewarding.</p>
+    <p>It works because it taps into universal human motivations — progress, mastery, recognition, and belonging. These don't disappear in professional contexts; they simply go unaddressed by most innovation rollouts, which focus on features and training rather than experience and emotion.</p>
+    <p>For innovators, gamification is not a cosmetic layer — it is a <span class="highlight">strategic adoption tool</span>. Applied well, it reduces the perceived cost of adoption, shortens the valley of dissolution, and turns early users into advocates.</p>
+  </div>
+</section>
+
+<!-- SECTION 2: TERMINOLOGY -->
+<section id="s2">
+  <div class="section-inner fade-in">
+    <div class="sec-num">02 &nbsp; Definitions</div>
+    <h2>Games-Related Terms: A Clear Distinction</h2>
+    <p>These four terms are frequently conflated. Understanding their differences is essential for choosing the right approach in the right context.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Term</th>
+          <th>What It Is</th>
+          <th>Primary Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Games</td>
+          <td>Structured play with rules, goals, and outcomes — entered voluntarily and intrinsically motivated.</td>
+          <td>Entertainment, enjoyment, competition</td>
+        </tr>
+        <tr>
+          <td>Simulations</td>
+          <td>Realistic models of real-world systems for practising decisions safely — accuracy is paramount.</td>
+          <td>Training, risk-free practice, decision rehearsal</td>
+        </tr>
+        <tr>
+          <td>Serious Games</td>
+          <td>Games designed with an explicit non-entertainment purpose — education, health behaviour, social change — but still fully game-structured.</td>
+          <td>Learning, awareness, behaviour change</td>
+        </tr>
+        <tr>
+          <td>Gamification</td>
+          <td>Applying selected game mechanics to an existing non-game context — without turning that context into a game.</td>
+          <td>Engagement, motivation, adoption, habit formation</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 20px;">The critical distinction: <span class="highlight">gamification doesn't create a game</span> — it borrows the motivational architecture of games and applies it to an existing product or process. This makes it far more scalable and practical for business contexts than building full games or simulations.</p>
+  </div>
+</section>
+
+<!-- SECTION 3: BEHAVIOURAL PSYCHOLOGY — condensed, moved to addl info -->
+<section id="s3">
+  <div class="section-inner fade-in">
+    <div class="sec-num">03 &nbsp; Behavioural Psychology</div>
+    <h2>Gamification & Behavioural Psychology</h2>
+    <p>Gamification doesn't work by accident — it draws on well-established principles of human psychology. Understanding these mechanisms helps you design gamification that lasts, not just novelty that fades.</p>
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-title">Progress & Completion</div>
+        <p>People are hardwired to finish what they've started. Progress bars, level indicators, and "almost there" signals are psychologically potent — the closer someone gets to a goal, the more motivated they become to complete it.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Recognition & Status</div>
+        <p>Visible achievement — badges, rankings, public acknowledgement — satisfies the human need for social recognition. When peers can see your progress, adoption becomes a social act, not just a personal one.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Challenge & Mastery</div>
+        <p>Engagement peaks when difficulty and skill are in balance — not too easy, not too hard. Well-designed gamification scales challenge progressively, keeping users in a state of growth rather than boredom or frustration.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Loss Aversion</div>
+        <p>People are more motivated to protect what they have than to gain something new. Streak mechanics, expiring rewards, and status maintenance all make continued participation feel like protection — a powerful driver of sustained behaviour.</p>
+      </div>
+    </div>
+    <div class="addl-box">
+      <div class="addl-label">📖 Additional Reading</div>
+      <p>For those interested in the deeper academic foundations: Self-Determination Theory (Deci & Ryan) explains why intrinsic motivation outlasts extrinsic rewards. Flow Theory (Csikszentmihalyi) maps the optimal engagement zone between boredom and anxiety. Operant Conditioning (Skinner) explains why variable reward schedules produce the strongest habitual behaviours. These frameworks underpin much of modern gamification design.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: KNOWLEDGE CAPTURE -->
+<section id="s4">
+  <div class="section-inner fade-in">
+    <div class="sec-num">04 &nbsp; Knowledge Capture</div>
+    <h2>Gamification for Industrial Knowledge Capture</h2>
+    <p>A less obvious but high-value application of gamification is <span class="highlight">knowledge capture</span> — using game mechanics not to push information to users, but to draw expertise out of them. In industrial and technical contexts, much of the most critical knowledge is tacit: embedded in experience, judgement, and habit rather than any document or system.</p>
+    <p>Gamification can make knowledge contribution feel worthwhile by attaching visible recognition, peer acknowledgement, and a sense of progress to the act of sharing. When contributing to a knowledge system earns the same kind of feedback loop as completing a challenge — points, visibility, status among peers — the cognitive effort of externalising expertise becomes more justifiable to the contributor.</p>
+
+    <p style="margin-bottom: 8px; font-weight: 500; color: var(--ink);">Where gamification can help:</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Making contribution visible</div>
+        <p>Recognising who contributed what — through public attribution, peer ratings, or contribution rankings — makes expertise sharing a social act with reputational value, not an invisible administrative task.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Lowering the entry barrier</div>
+        <p>Structured prompts, scenario-based inputs, and incremental challenges make it easier to start contributing without having to produce a polished document — reducing the friction of the first step.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Sustaining participation over time</div>
+        <p>Progress indicators, streaks, and milestone rewards give contributors a sense of accumulation — making the ongoing effort feel like it is building toward something rather than disappearing into a system nobody uses.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 24px; margin-bottom: 8px; font-weight: 500; color: var(--ink);">Where barriers remain — even with gamification:</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">The effort is genuinely high</div>
+        <p>Translating tacit expertise into structured, reusable knowledge is cognitively demanding. Game mechanics can encourage starting, but they cannot reduce the real cost of articulating complex, hard-won knowledge clearly.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Rewards must match the audience</div>
+        <p>Points and badges carry different weight depending on who receives them. Senior technical experts may find leaderboard recognition meaningful — or completely irrelevant. Understanding what the specific contributor group actually values is a prerequisite, not an afterthought.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">The system must be trusted and used</div>
+        <p>People contribute to systems they believe others will use. If the knowledge base is perceived as poorly maintained, hard to search, or unlikely to influence real decisions, no gamification layer will sustain engagement for long.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: OCTALYSIS -->
+<section id="s5">
+  <div class="section-inner fade-in">
+    <div class="sec-num">05 &nbsp; Yu-kai Chou</div>
+    <h2>The Octalysis Framework</h2>
+    <p>Developed by Yu-kai Chou, <span class="highlight">Octalysis</span> is a behavioural design framework that organises human motivation into eight core drives. Its central question is not "what game mechanic should I add?" but "which human drives am I activating — and which am I ignoring?"</p>
+    <p>Chou arranges the drives in two groups. <strong>White Hat drives</strong> (top of the octagon) are positive and empowering — they make people feel capable, creative, and connected. <strong>Black Hat drives</strong> (bottom) are urgent and pressure-based — they work by creating anxiety, scarcity, or fear of missing out. Both can be effective; the risk is over-relying on Black Hat drives, which produce short-term compliance but can erode trust over time.</p>
+
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-title">1 · Epic Meaning & Calling</div>
+        <p>The sense of contributing to something larger than yourself. People engage more deeply when they believe the activity has purpose beyond the immediate task.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">2 · Development & Accomplishment</div>
+        <p>The drive to grow, improve, and achieve. Progress bars, levels, and challenge milestones all serve this drive — but only when they represent genuine progress, not arbitrary accumulation.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">3 · Creativity & Feedback</div>
+        <p>The drive to express, experiment, and see the results of your choices. Systems that allow customisation, iteration, and creative input activate this drive.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">4 · Ownership & Possession</div>
+        <p>The drive to own and build on things over time. Accumulated progress, personalised profiles, and virtual assets make users reluctant to walk away — switching cost becomes emotional, not just practical.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">5 · Social Influence & Relatedness</div>
+        <p>The drive to connect, compare, and be recognised by others. Leaderboards, peer visibility, and collaborative challenges all operate here — one of the most powerful drivers in both consumer and enterprise contexts.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">6 · Scarcity & Impatience</div>
+        <p>The drive to pursue what is limited or not yet accessible. Time-limited access and exclusive rewards create urgency. Effective in short bursts; can create frustration if overused.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">7 · Unpredictability & Curiosity</div>
+        <p>The drive to find out what happens next. Variable rewards — where the outcome is uncertain — produce some of the strongest and most persistent engagement behaviours.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">8 · Loss & Avoidance</div>
+        <p>The drive to avoid losing progress, status, or opportunity. Streak mechanics and expiring rewards work here. Powerful but pressure-based — best used sparingly and transparently.</p>
+      </div>
+    </div>
+
+    <div class="addl-box" style="margin-top: 24px;">
+      <div class="addl-label">💡 How to Apply This</div>
+      <p>Use Octalysis as a diagnostic — map your product or adoption initiative against the eight drives and ask: which are activated, which are absent, and are you relying too heavily on pressure (drives 6–8) at the expense of meaning and mastery (drives 1–5)? The most sustainable designs earn engagement before they demand it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: LIMITATIONS -->
+<section id="s6">
+  <div class="section-inner fade-in">
+    <div class="sec-num">06 &nbsp; Limitations</div>
+    <h2>Limitations of Gamification in Innovation Adoption</h2>
+    <p>Gamification is a powerful and proven tool — but like any design approach, it performs best when applied with awareness of its boundaries. Understanding the limitations is not a reason to avoid gamification; it is what separates thoughtful application from superficial decoration.</p>
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-title">Surface-Level Implementation</div>
+        <p>Adding points and badges to a broken user experience doesn't fix it — it highlights the gap. Gamification amplifies what already works. The motivational mechanics must sit on top of genuine value, not substitute for it.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Overjustification Effect</div>
+        <p>Introducing extrinsic rewards into activities users already find meaningful can reduce their intrinsic motivation. The fix is to ensure gamification complements the inherent value of the activity, not replaces it.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Context & Cultural Fit</div>
+        <p>Competitive leaderboards energise some users and demoralise others. Game mechanics must be designed for the specific audience — their professional identity, cultural background, and what they actually find rewarding.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Novelty Decay</div>
+        <p>Game mechanics that feel fresh at launch become invisible over time. Sustained engagement requires the gamification design to evolve alongside the product — introducing new challenges, rewards, and social dynamics as users mature.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Measuring the Right Things</div>
+        <p>Gamification generates rich behavioural data — logins, completions, streaks — that can be mistaken for evidence of real adoption. High engagement with the game layer must be validated against whether the underlying innovation is actually generating value.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Ethical Responsibility</div>
+        <p>Black Hat drives — scarcity, loss aversion, unpredictability — are highly effective but carry responsibility. In contexts where users have limited ability to opt out, such as enterprise systems, these mechanics must be applied with care and transparency.</p>
+      </div>
+    </div>
+    <div class="note-box">
+      <div class="note-label">✓ The Practitioner Mindset</div>
+      <p>The most effective gamification designers treat limitations as design inputs, not dealbreakers. Knowing where a mechanic might backfire is exactly what allows you to build something that doesn't — and to make a stronger case for gamification to the stakeholders who matter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SYNTHESIS -->
+<section id="s7">
+  <div class="section-inner fade-in">
+    <div class="sec-num">07 &nbsp; Synthesis</div>
+    <h2>Putting It All Together</h2>
+    <p>Gamification, applied with intention, is one of the most accessible and scalable tools available to innovators. It doesn't require large budgets or complex technology — it requires understanding what your users actually care about, and designing experiences that speak to those motivations.</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">The What</div>
+        <p>Gamification applies game mechanics to non-game contexts — distinct from games, simulations, and serious games in both structure and purpose.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">The Why It Works</div>
+        <p>Progress, recognition, mastery, and loss aversion are universal human drives. Well-designed gamification puts these drives in service of adoption rather than leaving them unaddressed.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">The Industrial Opportunity</div>
+        <p>Knowledge capture is where gamification's potential is most underutilised — and most urgently needed. The refinery case shows that mechanics alone aren't enough; motivation design must address what experts truly value.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">The Design Framework</div>
+        <p>Octalysis gives you a diagnostic map of eight human drives. Use it to audit your current design — identify which drives are activated, which are absent, and which are doing too much work alone.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">The Opportunity Ahead</div>
+        <p>Every innovation faces an adoption gap. Gamification is one of the most direct tools for closing it — not by making things easier, but by making the journey toward adoption feel worth taking.</p>
+      </div>
+    </div>
+    <div class="divider" style="margin-top: 32px;"></div>
+    <p style="color: var(--muted); font-size: 14px;">The best gamification is invisible — users don't notice the mechanics, they simply notice that they keep coming back, keep learning, and keep progressing. That invisibility is the goal. And it is well within reach.</p>
+  </div>
+</section>
+
+<script>
+  const sections = [
+    { id: 's0', label: 'Intro' },
+    { id: 's1', label: 'What is Gamification' },
+    { id: 's2', label: 'Key Terms' },
+    { id: 's3', label: 'Behavioural Psychology' },
+    { id: 's4', label: 'Knowledge Capture' },
+    { id: 's5', label: 'Octalysis' },
+    { id: 's6', label: 'Limitations' },
+    { id: 's7', label: 'Synthesis' },
+  ];
+
+  const nav = document.getElementById('navDots');
+  sections.forEach((s) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-dot';
+    btn.setAttribute('data-label', s.label);
+    btn.addEventListener('click', () => document.getElementById(s.id).scrollIntoView({ behavior: 'smooth' }));
+    nav.appendChild(btn);
+  });
+
+  const dots = document.querySelectorAll('.nav-dot');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = sections.findIndex(s => s.id === entry.target.id);
+        dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        entry.target.querySelectorAll('.fade-in').forEach((el, i) => {
+          setTimeout(() => el.classList.add('visible'), i * 80);
+        });
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (el) observer.observe(el);
+  });
+
+  const fadeObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+</script>
+</body>
+</html>
