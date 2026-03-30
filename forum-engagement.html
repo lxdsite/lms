@@ -275,8 +275,20 @@
         }, [baseData, selectedForum, selectedStudent]);
 
         const handleExportCSV = () => {
-            // Determine headers
-            const headers = ["Student Name", "Student Email", "Forum Participation", "Grading Column"];
+            // Determine which forums to list as columns (If filtered to one, just show one; otherwise all)
+            const forumColumns = selectedForum === 'All' ? baseData.allForums : [selectedForum];
+            
+            // Helper to escape CSV strings
+            const escapeCSV = (str) => `"${String(str).replace(/"/g, '""')}"`;
+
+            // Build dynamic headers
+            const headers = [
+                "Student Name", 
+                "Student Email", 
+                ...forumColumns.map(escapeCSV), 
+                "Total Posts", 
+                "Grading Column"
+            ];
             const csvRows = [headers.join(",")];
 
             // We map over ALL valid students so the instructor gets a complete grading sheet
@@ -287,15 +299,24 @@
 
                 // Find if they have posts
                 const studentData = processed.posters.find(p => p.name === studentName);
-                const postCount = studentData ? studentData.totalPosts : 0;
 
-                // Build row (Quotes around name just in case of commas)
+                // Start building the row
                 const row = [
-                    `"${studentName}"`,
-                    `""`, // Email (often empty in Moodle standard log exports)
-                    postCount,
-                    `""`  // Grading Column
+                    escapeCSV(studentName),
+                    `""` // Email (often empty in Moodle standard log exports)
                 ];
+
+                // Append the count for each forum column
+                forumColumns.forEach(forumName => {
+                    const count = studentData && studentData[forumName] ? studentData[forumName] : 0;
+                    row.push(count);
+                });
+
+                // Append the Total Posts and empty Grading Column
+                const totalPosts = studentData ? studentData.totalPosts : 0;
+                row.push(totalPosts);
+                row.push(`""`);  
+
                 csvRows.push(row.join(","));
             });
 
