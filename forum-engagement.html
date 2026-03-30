@@ -57,6 +57,33 @@
     '#6366f1', '#d946ef', '#f43f5e', '#0ea5e9', '#10b981'
   ];
 
+  // --- Custom Tooltip to show Total Posts along with the breakdown ---
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const dataRow = payload[0].payload;
+      const total = dataRow.totalPosts;
+
+      return (
+              <div className="bg-white p-3 rounded-lg border border-slate-200 shadow-lg text-sm min-w-[200px]">
+                <p className="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-2 flex justify-between items-center">
+                  <span>{label}</span>
+                  <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full text-xs ml-3">
+                                {total} Total Posts
+                            </span>
+                </p>
+                {payload.map((entry, index) => (
+                        <div key={index} className="flex items-center gap-2 py-1">
+                          <div className="w-3 h-3 rounded-sm shadow-sm shrink-0" style={{ backgroundColor: entry.color }}></div>
+                          <span className="text-slate-600 truncate max-w-[200px]">{entry.name}:</span>
+                          <span className="font-semibold text-slate-800 ml-auto">{entry.value}</span>
+                        </div>
+                ))}
+              </div>
+      );
+    }
+    return null;
+  };
+
   function App() {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
@@ -160,7 +187,14 @@
         if (ctx.startsWith('Forum: ')) forumName = ctx.substring(7).trim();
         else if (ctx.startsWith('Course module: ')) forumName = ctx.substring(15).trim();
 
-        const isPost = evtName.includes('post created') || evtName.includes('discussion created') || evtName.includes('post updated');
+        // Strictly isolate active posting: creating a post, creating a discussion, or updating a post.
+        // Exclude any passive/mention logs (like viewed, mentioned)
+        const isPost = (evtName.includes('post created') ||
+                        evtName.includes('discussion created') ||
+                        evtName.includes('post updated')) &&
+                !evtName.includes('viewed') &&
+                !evtName.includes('mentioned');
+
         const isView = evtName.includes('viewed');
 
         if (isPost || isView) {
@@ -394,9 +428,7 @@
 
                                 <Tooltip
                                         cursor={{fill: '#f8fafc'}}
-                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                                        itemStyle={{ fontSize: '13px', paddingVertical: '2px' }}
-                                        labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}
+                                        content={<CustomTooltip />}
                                 />
 
                                 <Legend
