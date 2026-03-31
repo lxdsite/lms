@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overcoming Ecosystem Tensions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F0ECC8;
+    --paper: #F5F2D6;
+    --ink: #1B2A6B;
+    --ink-light: #2E3D7A;
+    --accent: #1B2A6B;
+    --accent-dim: #4A5A9A;
+    --border: rgba(27,42,107,0.14);
+    --shadow: rgba(27,42,107,0.10); --ink-muted: #5A6490;
+    --c0: #1B2A6B;
+    --c1: #243580;
+    --c2: #2C4090;
+    --c3: #1B2A6B;
+    --c4: #243580;
+    --c5: #0F1A4A;
+    --tab-w: 52px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* CONTENT AREA */
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(27,42,107,0.03) 27px, rgba(27,42,107,0.03) 28px);
+    position: relative;
+  }
+  .content-area::-webkit-scrollbar { width: 4px; }
+  .content-area::-webkit-scrollbar-track { background: transparent; }
+  .content-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Panels: smooth cross-fade */
+  .panel {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    padding: 52px 64px 80px 60px;
+    overflow-y: auto;
+  }
+  .panel.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    position: relative;
+    inset: auto;
+    padding: 52px 64px 80px 60px;
+  }
+
+  /* TYPOGRAPHY */
+  .panel-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .panel-eyebrow::after { content: ''; flex: 0 0 32px; height: 1px; background: var(--accent-dim); opacity: 0.6; }
+
+  .panel-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(24px, 3vw, 38px); line-height: 1.15;
+    font-weight: 500; color: var(--ink); margin-bottom: 22px; max-width: 640px;
+  }
+  .panel-body { font-size: 15px; line-height: 1.9; color: var(--ink-light); max-width: 660px; margin-bottom: 16px; }
+  .hl { color: var(--accent); font-weight: 500; font-style: italic; }
+  .rule { width: 40px; height: 1.5px; background: var(--accent-dim); margin: 22px 0; opacity: 0.5; }
+
+  /* TENSION TAGS */
+  .tension-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+  .tag { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; padding: 4px 9px; border-radius: 2px; display: inline-flex; align-items: center; gap: 5px; }
+  .tag-pip { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .tag.t1 { background: rgba(44,74,110,0.08); color: var(--c0); }
+  .tag.t1 .tag-pip { background: var(--c0); }
+  .tag.t2 { background: rgba(92,61,107,0.08); color: var(--c1); }
+  .tag.t2 .tag-pip { background: var(--c1); }
+  .tag.t3 { background: rgba(122,59,30,0.08); color: var(--c3); }
+  .tag.t3 .tag-pip { background: var(--c3); }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 13px; margin-top: 18px; max-width: 680px; }
+  .card { border: 1px solid var(--border); padding: 16px 18px; border-radius: 3px; background: rgba(255,255,255,0.6); transition: background 0.2s; }
+  .card:hover { background: rgba(255,255,255,0.9); }
+  .card-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 7px; }
+  .card p { font-size: 13px; line-height: 1.7; color: var(--ink-light); }
+
+  /* TRUST STRIP */
+  .trust-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin-top: 18px; max-width: 680px; }
+  .trust-cell { background: var(--paper); padding: 13px 15px; transition: background 0.2s; }
+  .trust-cell:hover { background: #fff; }
+  .trust-name { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+  .trust-def { font-size: 12px; color: var(--ink-light); line-height: 1.6; }
+
+  /* CAPABILITY ROWS */
+  .cap-row { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; max-width: 680px; }
+  .cap-block { display: grid; grid-template-columns: 160px 1fr; border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+  .cap-label { padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+  .cap-label-main { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: #fff; margin-bottom: 3px; line-height: 1.3; }
+  .cap-label-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; line-height: 1.4; }
+  .cap-body { padding: 14px 18px; background: rgba(255,255,255,0.5); }
+  .cap-body p { font-size: 13px; color: var(--ink-light); line-height: 1.7; }
+
+  /* PILLARS */
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 18px; max-width: 680px; }
+  .pillar { border-top: 2px solid var(--accent-dim); padding: 13px 15px; background: rgba(255,255,255,0.5); border-radius: 0 0 3px 3px; }
+  .pillar-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .pillar p { font-size: 12.5px; color: var(--ink-light); line-height: 1.65; }
+
+  /* NOTE BOX */
+  .note-box { border-left: 2px solid var(--accent-dim); padding: 12px 16px; background: rgba(27,42,107,0.05); border-radius: 0 3px 3px 0; margin-top: 18px; max-width: 640px; }
+  .note-label { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .note-box p { font-size: 13px; color: var(--ink-light); line-height: 1.75; }
+
+  /* INTRO */
+  .intro-overline { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+  .intro-big { font-family: 'Inter', sans-serif; font-size: clamp(34px, 5vw, 58px); line-height: 1.05; font-weight: 700; color: var(--ink); margin-bottom: 26px; letter-spacing: -0.02em; }
+  .intro-big em { font-style: italic; color: var(--accent); }
+  .legend { display: flex; flex-direction: column; gap: 9px; margin-top: 30px; }
+  .legend-row { display: flex; align-items: center; gap: 10px; }
+  .legend-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-light); }
+
+  /* BINDER — horizontal top bar */
+  .binder {
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 16px var(--shadow);
+    position: relative;
+    z-index: 10;
+    order: -1;
+  }
+
+  .spine-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s ease;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .spine-tab:last-child { border-right: none; }
+
+  .tab-bg {
+    position: absolute; inset: 0;
+    opacity: 0.78;
+    transition: opacity 0.25s;
+  }
+  .spine-tab.active .tab-bg { opacity: 1; }
+  .spine-tab:not(.active):hover .tab-bg { opacity: 0.9; }
+
+  .tab-text {
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.72);
+    position: relative;
+    z-index: 2;
+    transition: color 0.25s;
+    white-space: nowrap;
+  }
+  .spine-tab.active .tab-text { color: #fff; }
+
+  .tab-num {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: rgba(255,255,255,0.28);
+    z-index: 2;
+    transition: color 0.25s;
+    line-height: 1;
+  }
+  .spine-tab.active .tab-num { color: rgba(255,255,255,0.5); }
+
+  /* active bottom indicator */
+  .spine-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.55);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .spine-tab.active::after { opacity: 1; }
+
+  @media (max-width: 700px) {
+    .binder { height: auto; flex-wrap: wrap; }
+    .spine-tab { flex: 0 0 33.333%; height: 44px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .tab-text { font-size: 9px; letter-spacing: 0.09em; }
+    .tab-num { font-size: 7px; }
+    .content-area { overflow-y: auto; }
+    .panel.active { padding: 32px 24px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="content-area" id="contentArea">
+
+  <!-- PANEL 0 -->
+  <div class="panel active" id="p0">
+    <div class="intro-overline">Module Recap · Ecosystem Strategy</div>
+    <h1 class="intro-big">Overcoming<br><em>Ecosystem</em><br>Tensions</h1>
+    <div class="rule"></div>
+    <p class="panel-body">Ecosystem tensions — between value creation and capture, individual and collective gain, and fair appropriation — are structural, not accidental. They cannot be eliminated, but they can be governed through four interrelated mechanisms.</p>
+    <p class="panel-body">Select a chapter from the tabs above to explore each mechanism.</p>
+    <div class="legend">
+      <div class="legend-row"><div class="legend-pip" style="background:var(--c0)"></div><span class="legend-label">Value Creation vs. Value Capture</span></div>
+      <div class="legend-row"><div class="legend-pip" style="background:var(--c1)"></div><span class="legend-label">Mutual Value vs. Individual Value</span></div>
+      <div class="legend-row"><div class="legend-pip" style="background:var(--c3)"></div><span class="legend-label">Fairness in Value Appropriation</span></div>
+    </div>
+  </div>
+
+  <!-- PANEL 1 -->
+  <div class="panel" id="p1">
+    <div class="panel-eyebrow">01 · Mechanism</div>
+    <h2 class="panel-title">Defining Common Vision & Identity</h2>
+    <div class="tension-tags">
+      <span class="tag t2"><span class="tag-pip"></span>Mutual vs. Individual Value</span>
+      <span class="tag t3"><span class="tag-pip"></span>Fairness in Appropriation</span>
+    </div>
+    <p class="panel-body">The most foundational mechanism — and the most often skipped — is establishing a <span class="hl">shared answer to "who are we together?"</span> A common ecosystem identity built on shared values and culture creates a basis for cooperation that doesn't depend entirely on contracts or monitoring.</p>
+    <p class="panel-body">When actors see themselves as part of a collective with common purpose, purely individual value-maximising behaviour is tempered by a sense of membership. Norms emerge — unwritten but understood — about what is acceptable and what would damage the group. This matters especially for fairness tensions: actors tolerate an imperfect value distribution more readily when they believe others are acting in good faith.</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Common Values & Culture</div>
+        <p>Shared commitments — to quality, openness, or customer outcomes — create a reference point for decisions. These values function as soft governance, guiding behaviour where formal rules are silent.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Collective Identity</div>
+        <p>Beyond values, actors need a sense of belonging. Identity creates loyalty and reciprocal commitment that outlasts any single transaction, making ecosystems more resilient when tensions flare.</p>
+      </div>
+    </div>
+    <div class="note-box">
+      <div class="note-label">In Practice</div>
+      <p>Linux and open-source communities sustain contribution from thousands of actors — many competitors — through a shared identity built around open knowledge and collective progress. No single actor "wins"; the identity of the ecosystem is the draw.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 2 -->
+  <div class="panel" id="p2">
+    <div class="panel-eyebrow">02 · Mechanism</div>
+    <h2 class="panel-title">Building Trust, Reciprocity & Concurrency</h2>
+    <div class="tension-tags">
+      <span class="tag t1"><span class="tag-pip"></span>Value Creation vs. Capture</span>
+      <span class="tag t2"><span class="tag-pip"></span>Mutual vs. Individual Value</span>
+      <span class="tag t3"><span class="tag-pip"></span>Fairness in Appropriation</span>
+    </div>
+    <p class="panel-body">Trust is the lubricant of ecosystem collaboration. Without it, every interaction becomes a negotiation. Ecosystems that sustain cooperation build multiple layers of trust, reinforced by patterns of reciprocal exchange and simultaneous co-development.</p>
+    <div class="trust-strip">
+      <div class="trust-cell">
+        <div class="trust-name">Functional Trust</div>
+        <div class="trust-def">Confidence that partners reliably deliver on technical and operational commitments. Built through track record and competence signals.</div>
+      </div>
+      <div class="trust-cell">
+        <div class="trust-name">Proxy Trust</div>
+        <div class="trust-def">Trust extended via endorsement by a credible third party — certifications, referrals, platform membership, or shared affiliations.</div>
+      </div>
+      <div class="trust-cell">
+        <div class="trust-name">Reflective Trust</div>
+        <div class="trust-def">Trust from mutual understanding — knowing how a partner thinks and behaves under pressure. Develops through sustained interaction over time.</div>
+      </div>
+      <div class="trust-cell">
+        <div class="trust-name">Institutional & Calculative Trust</div>
+        <div class="trust-def">Trust grounded in formal structures — contracts, standards, regulatory oversight — and rational assessment of incentives.</div>
+      </div>
+    </div>
+    <div class="card-grid" style="margin-top:14px;">
+      <div class="card">
+        <div class="card-title">Reciprocity</div>
+        <p>The expectation of mutual exchange — balanced over time. When actors invest knowing others will invest in return, cooperation becomes self-reinforcing rather than fragile.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Concurrency</div>
+        <p>Simultaneous development among ecosystem actors rather than sequential handoffs. Concurrent evolution builds shared momentum and surfaces interdependencies early.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3 -->
+  <div class="panel" id="p3">
+    <div class="panel-eyebrow">03 · Mechanism</div>
+    <h2 class="panel-title">Cultivating Dynamic & Interorganisational Capabilities</h2>
+    <div class="tension-tags">
+      <span class="tag t1"><span class="tag-pip"></span>Value Creation vs. Capture</span>
+      <span class="tag t2"><span class="tag-pip"></span>Mutual vs. Individual Value</span>
+    </div>
+    <p class="panel-body">The ability to adapt — to absorb new actors, respond to shifts, and reconfigure around new opportunities — depends on <span class="hl">capabilities that span organisational boundaries</span>. These are system-level capabilities developed collectively, not just within individual firms.</p>
+    <div class="cap-row">
+      <div class="cap-block">
+        <div class="cap-label" style="background:var(--c2)">
+          <div class="cap-label-main">Ecosystem Sensing</div>
+          <div class="cap-label-sub">Opportunity Screening · Partnership Scanning</div>
+        </div>
+        <div class="cap-body"><p>The collective ability to read the environment — identifying emerging opportunities, spotting threats, and screening partners. Requires open information flows and a culture of shared intelligence rather than hoarding.</p></div>
+      </div>
+      <div class="cap-block">
+        <div class="cap-label" style="background:var(--c3)">
+          <div class="cap-label-main">Ecosystem Seizing</div>
+          <div class="cap-label-sub">Value Proposition Development · Ecosystem Formation</div>
+        </div>
+        <div class="cap-body"><p>The ability to act on what the ecosystem senses — developing new value propositions together and forming new partnerships to address an opportunity before competitors do. Speed and coordination matter as much as insight.</p></div>
+      </div>
+      <div class="cap-block">
+        <div class="cap-label" style="background:var(--c0)">
+          <div class="cap-label-main">Ecosystem Reconfiguring</div>
+          <div class="cap-label-sub">Adaptive Value Creation · Economic Resilience</div>
+        </div>
+        <div class="cap-body"><p>The ability to restructure roles, relationships, and value flows when conditions change — without fragmenting the ecosystem. Requires flexibility in structure and resilience in relationships simultaneously.</p></div>
+      </div>
+    </div>
+    <div class="note-box">
+      <div class="note-label">In Practice</div>
+      <p>The semiconductor ecosystem — spanning chip designers, fabs, equipment makers, and software tooling — continuously reconfigures around new process nodes and application demands. No single firm holds all capabilities; ecosystem-wide sensing and seizing keeps the system viable through each technological generation.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 4 -->
+  <div class="panel" id="p4">
+    <div class="panel-eyebrow">04 · Mechanism</div>
+    <h2 class="panel-title">Flexible Alignment & Governance</h2>
+    <div class="tension-tags">
+      <span class="tag t1"><span class="tag-pip"></span>Value Creation vs. Capture</span>
+      <span class="tag t2"><span class="tag-pip"></span>Mutual vs. Individual Value</span>
+      <span class="tag t3"><span class="tag-pip"></span>Fairness in Appropriation</span>
+    </div>
+    <p class="panel-body">Rigid governance structures stifle the adaptability that makes ecosystems valuable. <span class="hl">Flexible alignment</span> is the ability of diverse actors to coordinate without a fixed hierarchy or exhaustive rulebook — achieving coherence without uniformity.</p>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-title">Shared Purpose</div>
+        <p>A common direction guiding coordination without requiring agreement on everything. Purpose governs decisions where rules are silent.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-title">Adaptability</div>
+        <p>Governance structures that evolve — revisable agreements, flexible roles, and processes that don't require consensus on every adjustment.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-title">Interdependence with Autonomy</div>
+        <p>Actors are mutually dependent yet retain freedom within agreed boundaries — preserving innovation incentives while maintaining coherence.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-title">Loose Coupling</div>
+        <p>Interfaces designed so changes in one part don't cascade through the whole. Modularity enables resilience and independent evolution.</p>
+      </div>
+    </div>
+    <div class="note-box">
+      <div class="note-label">In Practice</div>
+      <p>The internet's governance model — standards set by open bodies like IETF, with decentralised implementation by thousands of independent actors — exemplifies flexible alignment. No one controls the system, yet it coordinates reliably across billions of devices through shared protocols and a loose but durable governance architecture.</p>
+    </div>
+  </div>
+
+  <!-- PANEL 5 -->
+  <div class="panel" id="p5">
+    <div class="panel-eyebrow">05 · Synthesis</div>
+    <h2 class="panel-title">Four Mechanisms, Three Tensions</h2>
+    <p class="panel-body">No single mechanism resolves all ecosystem tensions on its own. They work in combination — each addressing different root causes, and reinforcing each other when applied together.</p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">Common Vision & Identity</div>
+        <p>Creates the baseline commitment that makes the other mechanisms possible. Without shared purpose, trust is transactional, governance adversarial, and capabilities hoarded.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Trust, Reciprocity & Concurrency</div>
+        <p>Reduces the friction cost of cooperation and makes long-term investment feel safe. Without trust, actors default to protective behaviour that limits value creation for all.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Dynamic Capabilities</div>
+        <p>Ensures the ecosystem adapts without fragmenting. Without shared sensing and reconfiguring, ecosystems become rigid and are displaced by more agile competitors.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Flexible Governance</div>
+        <p>Provides structural conditions for coordination without control. Without governance, trust and identity alone cannot resolve disputes over value appropriation at scale.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BINDER -->
+<div class="binder">
+  <div class="spine-tab active" data-panel="0">
+    <div class="tab-bg" style="background:var(--c5)"></div>
+    <span class="tab-text">Overview</span>
+    <span class="tab-num">00</span>
+  </div>
+  <div class="spine-tab" data-panel="1">
+    <div class="tab-bg" style="background:var(--c1)"></div>
+    <span class="tab-text">Common Vision</span>
+    <span class="tab-num">01</span>
+  </div>
+  <div class="spine-tab" data-panel="2">
+    <div class="tab-bg" style="background:var(--c2)"></div>
+    <span class="tab-text">Trust & Reciprocity</span>
+    <span class="tab-num">02</span>
+  </div>
+  <div class="spine-tab" data-panel="3">
+    <div class="tab-bg" style="background:var(--c0)"></div>
+    <span class="tab-text">Dynamic Capabilities</span>
+    <span class="tab-num">03</span>
+  </div>
+  <div class="spine-tab" data-panel="4">
+    <div class="tab-bg" style="background:var(--c3)"></div>
+    <span class="tab-text">Flexible Governance</span>
+    <span class="tab-num">04</span>
+  </div>
+  <div class="spine-tab" data-panel="5">
+    <div class="tab-bg" style="background:var(--c5)"></div>
+    <span class="tab-text">Synthesis</span>
+    <span class="tab-num">05</span>
+  </div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.spine-tab');
+  const contentArea = document.getElementById('contentArea');
+  let transitioning = false;
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (transitioning) return;
+      const idx = tab.dataset.panel;
+      const current = document.querySelector('.panel.active');
+      const next = document.getElementById('p' + idx);
+      if (current === next) return;
+
+      transitioning = true;
+
+      // Update tab states immediately
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // Fade out current
+      current.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+      current.style.opacity = '0';
+      current.style.transform = 'translateY(-6px)';
+
+      setTimeout(() => {
+        current.classList.remove('active');
+        current.style.transition = '';
+        current.style.opacity = '';
+        current.style.transform = '';
+
+        // Prepare next (invisible, slightly below)
+        next.style.opacity = '0';
+        next.style.transform = 'translateY(10px)';
+        next.classList.add('active');
+        contentArea.scrollTo({ top: 0 });
+
+        // Force reflow then fade in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            next.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            next.style.opacity = '1';
+            next.style.transform = 'translateY(0)';
+            setTimeout(() => {
+              next.style.transition = '';
+              next.style.opacity = '';
+              next.style.transform = '';
+              transitioning = false;
+            }, 420);
+          });
+        });
+      }, 220);
+    });
+  });
+</script>
+</body>
+</html>
