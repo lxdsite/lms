@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Extract iframe src</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+        }
+        #buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: none;
+            color: #fff;
+        }
+        /* Distinguishable button styles */
+        #extractBtn {
+            background-color: #4CAF50; /* Green */
+        }
+        #copyBtn {
+            background-color: #008CBA; /* Blue */
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f7f7f7;
+            border: 1px solid #ddd;
+            min-height: 50px;
+            white-space: pre-wrap; /* So newlines are visible if any */
+        }
+    </style>
+</head>
+<body>
+<h1>Extract iframe src</h1>
+
+<!-- Input area -->
+<textarea id="code" placeholder="Paste your iframe code here..."></textarea>
+
+<!-- Action buttons -->
+<div id="buttons">
+    <button id="extractBtn" onclick="extractSrc()">Extract SRC</button>
+    <button id="copyBtn" onclick="copyResult()">Copy</button>
+</div>
+
+<!-- Output area -->
+<div id="result">Result will appear here</div>
+
+<script>
+    function extractSrc() {
+        // Retrieve the raw HTML input
+        const code = document.getElementById('code').value;
+
+        // Parse the HTML string into a document
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(code, 'text/html');
+
+        // Retrieve all iframes found in the parsed document
+        const iframes = doc.getElementsByTagName('iframe');
+        let results = '';
+
+        // Loop through and gather their 'src' attributes
+        for (let i = 0; i < iframes.length; i++) {
+            results += iframes[i].src + '\n';
+        }
+
+        // Display result
+        document.getElementById('result').textContent = results || 'No iframes found!';
+    }
+
+    function copyResult() {
+        const resultText = document.getElementById('result').textContent.trim();
+        if (resultText && resultText !== 'No iframes found!') {
+            // Copy to clipboard without showing an alert
+            navigator.clipboard.writeText(resultText)
+                .catch(err => console.error('Failed to copy: ', err));
+        }
+    }
+</script>
+</body>
+</html>
