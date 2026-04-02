@@ -1,26 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linear Regression Tool</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #tool-container { max-width: 600px; margin: 20px auto; font-family: sans-serif; text-align: center; }
+        .canvas-wrapper { position: relative; width: 100%; height: 400px; cursor: crosshair; border: 1px solid #ddd; }
+        #chartCanvas, #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #drawCanvas { z-index: 10; }
+        .stats-panel { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; display: flex; justify-content: space-around; }
+        .stat-box { font-weight: bold; color: #333; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
+        button:hover { background: #0056b3; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="plot-container">
-            <canvas id="scatter-plot"></canvas>
-        </div>
-        <div class="controls">
-            <button id="clear-button">Clear</button>
-        </div>
-        <div class="results">
-            <h3>Linear Regression Results</h3>
-            <p>Slope: <span id="slope"></span></p>
-            <p>Intercept: <span id="intercept"></span></p>
-            <p>R Square: <span id="r-square"></span></p>
-        </div>
+
+<div id="tool-container">
+    <h3>Linear Regression Practice</h3>
+    <p>Click and drag to draw your line of best fit!</p>
+    <button onclick="resetTool()">Clear Drawing</button>
+    
+    <div class="canvas-wrapper">
+        <canvas id="chartCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
     </div>
-    <script src="script.js"></script>
+
+    <div class="stats-panel">
+        <div class="stat-box">Slope (m): <span id="slope">-</span></div>
+        <div class="stat-box">Intercept (b): <span id="intercept">-</span></div>
+        <div class="stat-box">R²: <span id="r2">-</span></div>
+    </div>
+</div>
+
+<script>
+    let chart;
+    const drawCanvas = document.getElementById('drawCanvas');
+    const ctx = drawCanvas.getContext('2d');
+    let isDrawing = false;
+    let points = [];
+    let dataset = [];
+
+    // 1. Generate Noisy Linear Data
+    function generateData() {
+        dataset = [];
+        for (let i = 0; i < 30; i++) {
+            let x = i + (Math.random() * 5);
+            let y = (i * 0.8) + (Math.random() * 15) + 5;
+            dataset.push({x: x, y: y});
+        }
+    }
+
+    // 2. Initialize Chart.js
+    function initChart() {
+        const ctc = document.getElementById('chartCanvas').getContext('2d');
+        chart = new Chart(ctc, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Dataset',
+                    data: dataset,
+                    backgroundColor: '#FF6384'
+                }, {
+                    label: 'Your Regression Line',
+                    data: [],
+                    type: 'line',
+                    borderColor: '#007bff',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { min: 0, max: 40 },
+                    y: { min: 0, max: 60 }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // 3. Drawing Logic
+    function getMousePos(e) {
+        const rect = drawCanvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    drawCanvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        points = [getMousePos(e)];
+        ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    });
+
+    drawCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        points.push(pos);
+        
+        // Visual feedback for the "wavy" drawing
+        ctx.beginPath();
+        ctx.moveTo(points[points.length-2].x, points[points.length-2].y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = 'rgba(0, 123, 255, 0.5)';
+        ctx.stroke();
+    });
+
+    drawCanvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+        processDrawing();
+        ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    });
+
+    // 4. Convert Drawing to Math
+    function processDrawing() {
+        if (points.length < 2) return;
+
+        // Convert pixel points to Chart values
+        const chartPoints = points.map(p => ({
+            x: chart.scales.x.getValueForPixel(p.x),
+            y: chart.scales.y.getValueForPixel(p.y)
+        }));
+
+        // Simple Linear Regression on the DRAWN points (to snap it to a line)
+        const n = chartPoints.length;
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+        chartPoints.forEach(p => {
+            sumX += p.x; sumY += p.y;
+            sumXY += (p.x * p.y); sumX2 += (p.x * p.x);
+        });
+
+        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        // Calculate R² relative to the ACTUAL dataset
+        const r2 = calculateR2(slope, intercept);
+
+        // Update Chart
+        chart.data.datasets[1].data = [
+            {x: 0, y: intercept},
+            {x: 40, y: slope * 40 + intercept}
+        ];
+        chart.update();
+
+        // Update UI
+        document.getElementById('slope').innerText = slope.toFixed(2);
+        document.getElementById('intercept').innerText = intercept.toFixed(2);
+        document.getElementById('r2').innerText = r2.toFixed(3);
+    }
+
+    function calculateR2(m, b) {
+        const yMean = dataset.reduce((a, b) => a + b.y, 0) / dataset.length;
+        let ssRes = 0;
+        let ssTot = 0;
+        dataset.forEach(p => {
+            const yPred = m * p.x + b;
+            ssRes += Math.pow(p.y - yPred, 2);
+            ssTot += Math.pow(p.y - yMean, 2);
+        });
+        return Math.max(0, 1 - (ssRes / ssTot));
+    }
+
+    function resetTool() {
+        chart.data.datasets[1].data = [];
+        chart.update();
+        document.getElementById('slope').innerText = "-";
+        document.getElementById('intercept').innerText = "-";
+        document.getElementById('r2').innerText = "-";
+    }
+
+    // Initialize
+    window.onload = () => {
+        const rect = drawCanvas.parentElement.getBoundingClientRect();
+        drawCanvas.width = rect.width;
+        drawCanvas.height = rect.height;
+        generateData();
+        initChart();
+    };
+</script>
 </body>
 </html>
