@@ -3,32 +3,53 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        #tool-container { max-width: 600px; margin: 20px auto; font-family: sans-serif; text-align: center; }
-        .canvas-wrapper { position: relative; width: 100%; height: 400px; cursor: crosshair; border: 1px solid #ddd; }
+        #tool-container { max-width: 700px; margin: 20px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; color: #333; }
+        .canvas-wrapper { position: relative; width: 100%; height: 400px; cursor: crosshair; border: 2px solid #eee; border-radius: 8px; overflow: hidden; background: white; }
         #chartCanvas, #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #drawCanvas { z-index: 10; }
-        .stats-panel { margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px; display: flex; justify-content: space-around; }
-        .stat-box { font-weight: bold; color: #333; }
-        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
-        button:hover { background: #0056b3; }
+        .controls { margin-bottom: 15px; display: flex; justify-content: center; gap: 10px; }
+        button { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-clear { background: #6c757d; color: white; }
+        .btn-fit { background: #28a745; color: white; }
+        button:hover { opacity: 0.8; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .stat-card { padding: 10px; border-radius: 8px; background: #f8f9fa; border: 1px solid #ddd; }
+        .stat-card.student { border-left: 5px solid #007bff; }
+        .stat-card.actual { border-left: 5px solid #28a745; }
+        .stat-title { font-size: 0.9rem; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; }
+        .val-row { display: flex; justify-content: space-between; padding: 2px 0; font-family: monospace; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
 <div id="tool-container">
-    <h3>Linear Regression Practice</h3>
-    <p>Click and drag to draw your line of best fit!</p>
-    <button onclick="resetTool()">Clear Drawing</button>
+    <h2>Linear Regression Challenge</h2>
+    <p>Draw your line of best fit by dragging on the chart!</p>
+    
+    <div class="controls">
+        <button class="btn-clear" onclick="resetTool()">Clear Drawing</button>
+        <button class="btn-fit" onclick="showBestFit()">Show Actual Best Fit</button>
+    </div>
     
     <div class="canvas-wrapper">
         <canvas id="chartCanvas"></canvas>
         <canvas id="drawCanvas"></canvas>
     </div>
 
-    <div class="stats-panel">
-        <div class="stat-box">Slope (m): <span id="slope">-</span></div>
-        <div class="stat-box">Intercept (b): <span id="intercept">-</span></div>
-        <div class="stat-box">R²: <span id="r2">-</span></div>
+    <div class="stats-grid">
+        <div class="stat-card student">
+            <div class="stat-title" style="color:#007bff">Your Estimate</div>
+            <div class="val-row"><span>Slope:</span> <span id="s-m">-</span></div>
+            <div class="val-row"><span>Intercept:</span> <span id="s-b">-</span></div>
+            <div class="val-row"><span>R²:</span> <span id="s-r2">-</span></div>
+        </div>
+        <div class="stat-card actual">
+            <div class="stat-title" style="color:#28a745">Actual Model</div>
+            <div class="val-row"><span>Slope:</span> <span id="a-m">-</span></div>
+            <div class="val-row"><span>Intercept:</span> <span id="a-b">-</span></div>
+            <div class="val-row"><span>R²:</span> <span id="a-r2">-</span></div>
+        </div>
     </div>
 </div>
 
@@ -39,50 +60,58 @@
     let isDrawing = false;
     let points = [];
     let dataset = [];
+    let actualModel = { m: 0, b: 0, r2: 0 };
 
-    // 1. Generate Noisy Linear Data
     function generateData() {
         dataset = [];
         for (let i = 0; i < 30; i++) {
-            let x = i + (Math.random() * 5);
-            let y = (i * 0.8) + (Math.random() * 15) + 5;
+            let x = i + (Math.random() * 4);
+            let y = (i * 0.75) + (Math.random() * 12) + 8;
             dataset.push({x: x, y: y});
         }
+        actualModel = runRegression(dataset);
     }
 
-    // 2. Initialize Chart.js
+    function runRegression(data) {
+        const n = data.length;
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+        data.forEach(p => {
+            sumX += p.x; sumY += p.y;
+            sumXY += (p.x * p.y); sumX2 += (p.x * p.x);
+        });
+        const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const b = (sumY - m * sumX) / n;
+        
+        // R2 calculation
+        const yMean = sumY / n;
+        let ssRes = 0, ssTot = 0;
+        data.forEach(p => {
+            ssRes += Math.pow(p.y - (m * p.x + b), 2);
+            ssTot += Math.pow(p.y - yMean, 2);
+        });
+        return { m, b, r2: 1 - (ssRes / ssTot) };
+    }
+
     function initChart() {
         const ctc = document.getElementById('chartCanvas').getContext('2d');
         chart = new Chart(ctc, {
             type: 'scatter',
             data: {
-                datasets: [{
-                    label: 'Dataset',
-                    data: dataset,
-                    backgroundColor: '#FF6384'
-                }, {
-                    label: 'Your Regression Line',
-                    data: [],
-                    type: 'line',
-                    borderColor: '#007bff',
-                    borderWidth: 3,
-                    pointRadius: 0,
-                    fill: false
-                }]
+                datasets: [
+                    { label: 'Data', data: dataset, backgroundColor: '#FF6384', pointRadius: 5 },
+                    { label: 'Your Line', data: [], type: 'line', borderColor: '#007bff', borderWidth: 3, pointRadius: 0, fill: false },
+                    { label: 'Best Fit', data: [], type: 'line', borderColor: '#28a745', borderWidth: 3, borderDash: [5, 5], pointRadius: 0, fill: false }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: { min: 0, max: 40 },
-                    y: { min: 0, max: 60 }
-                },
+                scales: { x: { min: 0, max: 40 }, y: { min: 0, max: 60 } },
                 plugins: { legend: { display: false } }
             }
         });
     }
 
-    // 3. Drawing Logic
     function getMousePos(e) {
         const rect = drawCanvas.getBoundingClientRect();
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
@@ -98,79 +127,64 @@
         if (!isDrawing) return;
         const pos = getMousePos(e);
         points.push(pos);
-        
-        // Visual feedback for the "wavy" drawing
         ctx.beginPath();
         ctx.moveTo(points[points.length-2].x, points[points.length-2].y);
         ctx.lineTo(pos.x, pos.y);
-        ctx.strokeStyle = 'rgba(0, 123, 255, 0.5)';
+        ctx.strokeStyle = 'rgba(0, 123, 255, 0.4)';
+        ctx.lineWidth = 2;
         ctx.stroke();
     });
 
     drawCanvas.addEventListener('mouseup', () => {
         isDrawing = false;
-        processDrawing();
-        ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    });
-
-    // 4. Convert Drawing to Math
-    function processDrawing() {
         if (points.length < 2) return;
 
-        // Convert pixel points to Chart values
         const chartPoints = points.map(p => ({
             x: chart.scales.x.getValueForPixel(p.x),
             y: chart.scales.y.getValueForPixel(p.y)
         }));
 
-        // Simple Linear Regression on the DRAWN points (to snap it to a line)
-        const n = chartPoints.length;
-        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-        chartPoints.forEach(p => {
-            sumX += p.x; sumY += p.y;
-            sumXY += (p.x * p.y); sumX2 += (p.x * p.x);
+        const studentLine = runRegression(chartPoints);
+        
+        // Calculate student R2 against the REAL dataset
+        const yMean = dataset.reduce((a, b) => a + b.y, 0) / dataset.length;
+        let ssRes = 0, ssTot = 0;
+        dataset.forEach(p => {
+            ssRes += Math.pow(p.y - (studentLine.m * p.x + studentLine.b), 2);
+            ssTot += Math.pow(p.y - yMean, 2);
         });
+        const studentR2 = Math.max(0, 1 - (ssRes / ssTot));
 
-        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
-
-        // Calculate R² relative to the ACTUAL dataset
-        const r2 = calculateR2(slope, intercept);
-
-        // Update Chart
         chart.data.datasets[1].data = [
-            {x: 0, y: intercept},
-            {x: 40, y: slope * 40 + intercept}
+            {x: 0, y: studentLine.b},
+            {x: 40, y: studentLine.m * 40 + studentLine.b}
         ];
         chart.update();
 
-        // Update UI
-        document.getElementById('slope').innerText = slope.toFixed(2);
-        document.getElementById('intercept').innerText = intercept.toFixed(2);
-        document.getElementById('r2').innerText = r2.toFixed(3);
-    }
+        document.getElementById('s-m').innerText = studentLine.m.toFixed(2);
+        document.getElementById('s-b').innerText = studentLine.b.toFixed(2);
+        document.getElementById('s-r2').innerText = studentR2.toFixed(3);
+        ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    });
 
-    function calculateR2(m, b) {
-        const yMean = dataset.reduce((a, b) => a + b.y, 0) / dataset.length;
-        let ssRes = 0;
-        let ssTot = 0;
-        dataset.forEach(p => {
-            const yPred = m * p.x + b;
-            ssRes += Math.pow(p.y - yPred, 2);
-            ssTot += Math.pow(p.y - yMean, 2);
-        });
-        return Math.max(0, 1 - (ssRes / ssTot));
+    function showBestFit() {
+        chart.data.datasets[2].data = [
+            {x: 0, y: actualModel.b},
+            {x: 40, y: actualModel.m * 40 + actualModel.b}
+        ];
+        chart.update();
+        document.getElementById('a-m').innerText = actualModel.m.toFixed(2);
+        document.getElementById('a-b').innerText = actualModel.b.toFixed(2);
+        document.getElementById('a-r2').innerText = actualModel.r2.toFixed(3);
     }
 
     function resetTool() {
         chart.data.datasets[1].data = [];
+        chart.data.datasets[2].data = [];
         chart.update();
-        document.getElementById('slope').innerText = "-";
-        document.getElementById('intercept').innerText = "-";
-        document.getElementById('r2').innerText = "-";
+        ['s-m','s-b','s-r2','a-m','a-b','a-r2'].forEach(id => document.getElementById(id).innerText = "-");
     }
 
-    // Initialize
     window.onload = () => {
         const rect = drawCanvas.parentElement.getBoundingClientRect();
         drawCanvas.width = rect.width;
