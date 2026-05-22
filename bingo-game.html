@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Bingo Flip Card Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #333;
+        }
+        /* Grid styling */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 120px);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .cell {
+            width: 120px;
+            height: 80px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+        .cell-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 8px;
+        }
+        .cell.flipped .cell-inner {
+            transform: rotateY(180deg);
+        }
+        .cell-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+        /* Flat design: solid, flat colors */
+        .cell-front {
+            background-color: #3498db;
+        }
+        .cell-back {
+            background-color: #2ecc71;
+            transform: rotateY(180deg);
+            font-size: 1.5rem;
+        }
+        /* Flat design button */
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+        /* Custom flat modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid #3498db;
+        }
+        .modal-content p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .modal-content button {
+            background-color: #3498db;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #fff;
+            cursor: pointer;
+        }
+        .modal-content button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<h1>Bingo Flip Card Game</h1>
+<div class="grid" id="grid"></div>
+<button id="nextButton">Reset</button>
+
+<!-- Custom Modal for Pop-up Messages -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <p id="modal-message"></p>
+        <button id="modal-close">Close</button>
+    </div>
+</div>
+
+<script>
+    // Array of inner critic phrases for each cell (25 phrases for a 5x5 grid)
+    const phrases = [
+        "I’m not good enough for this role",
+        "What if I fail?",
+        "I got lucky, not skilled",
+        "I’m not smart enough",
+        "I should have done more",
+        "They probably don’t respect me",
+        "I can’t speak up—I’ll sound stupid",
+        "If I make a mistake, they’ll never trust me again",
+        "No one actually cares what I have to say",
+        "I don’t belong",
+        "I’ll never be as good as them",
+        "I should just stay in my comfort zone",
+        "If I ask for help, they’ll think I’m incompetent",
+        "People are expecting me to fail",
+        "I don’t have what it takes",
+        "I’m not good enough",
+        "I don’t deserve success",
+        "Everyone else has it figured out except me",
+        "I don’t matter",
+        "I should be working harder",
+        "I’ll never be able to handle this responsibility",
+        "I’m too old/ young",
+        "I need to be perfect, or I’ll disappoint people",
+        "I’m a burden",
+        "They’re only being nice—they don’t really mean it"
+    ];
+
+    // Create a board state array to keep track of flipped cells (true = flipped)
+    const boardState = new Array(25).fill(false);
+    const grid = document.getElementById("grid");
+
+    // Global variables for tracking rapid ("random") clicks
+    let randomClickCount = 0;
+    let randomPopupShown = false;
+    let firstRandomClickTime = null;
+    const randomThreshold = 5000; // milliseconds
+
+    // Create 25 cells (5x5 grid)
+    for (let i = 0; i < 25; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.setAttribute("data-index", i);
+
+        // Create the inner container for the flip effect
+        const cellInner = document.createElement("div");
+        cellInner.classList.add("cell-inner");
+
+        // Create the front face with an inner critic phrase
+        const cellFront = document.createElement("div");
+        cellFront.classList.add("cell-face", "cell-front");
+        cellFront.textContent = phrases[i];
+
+        // Create the back face (revealed when flipped)
+        const cellBack = document.createElement("div");
+        cellBack.classList.add("cell-face", "cell-back");
+        cellBack.textContent = "✔";
+
+        // Append faces to the inner container, then to the cell
+        cellInner.appendChild(cellFront);
+        cellInner.appendChild(cellBack);
+        cell.appendChild(cellInner);
+
+        // Toggle flip state on click
+        cell.addEventListener("click", function() {
+            const index = parseInt(cell.getAttribute("data-index"));
+            if (boardState[index]) {
+                // Card is already flipped; unflip it.
+                boardState[index] = false;
+                cell.classList.remove("flipped");
+            } else {
+                // Flip the card.
+                boardState[index] = true;
+                cell.classList.add("flipped");
+
+                // Check the timing of flips to detect rapid ("random") clicking
+                const currentTime = Date.now();
+                if (firstRandomClickTime === null || (currentTime - firstRandomClickTime) > randomThreshold) {
+                    // Too much time has passed; reset the counter and timer.
+                    firstRandomClickTime = currentTime;
+                    randomClickCount = 1;
+                } else {
+                    randomClickCount++;
+                }
+
+                if (!randomPopupShown && randomClickCount >= 10) {
+                    showModal("Wow! You're a rare individual!");
+                    randomPopupShown = true;
+                }
+
+                checkBingo();
+            }
+        });
+
+        grid.appendChild(cell);
+    }
+
+    // Function to check for a bingo (complete row, column, or diagonal)
+    function checkBingo() {
+        let win = false;
+        // Check rows
+        for (let row = 0; row < 5; row++) {
+            let rowWin = true;
+            for (let col = 0; col < 5; col++) {
+                if (!boardState[row * 5 + col]) {
+                    rowWin = false;
+                    break;
+                }
+            }
+            if (rowWin) {
+                win = true;
+                break;
+            }
+        }
+        // Check columns if no row win
+        if (!win) {
+            for (let col = 0; col < 5; col++) {
+                let colWin = true;
+                for (let row = 0; row < 5; row++) {
+                    if (!boardState[row * 5 + col]) {
+                        colWin = false;
+                        break;
+                    }
+                }
+                if (colWin) {
+                    win = true;
+                    break;
+                }
+            }
+        }
+        // Check diagonals if no row/column win
+        if (!win) {
+            let diagWin1 = true;
+            for (let i = 0; i < 5; i++) {
+                if (!boardState[i * 5 + i]) {
+                    diagWin1 = false;
+                    break;
+                }
+            }
+            let diagWin2 = true;
+            for (let i = 0; i < 5; i++) {
+                if (!boardState[i * 5 + (4 - i)]) {
+                    diagWin2 = false;
+                    break;
+                }
+            }
+            if (diagWin1 || diagWin2) {
+                win = true;
+            }
+        }
+        if (win) {
+            // Use the custom modal instead of a default alert.
+            setTimeout(() => {
+                showModal("Bingo! You got a complete line!");
+            }, 150);
+        }
+    }
+
+    // "Next" button resets the board for a new game.
+    document.getElementById("nextButton").addEventListener("click", function() {
+        boardState.fill(false);
+        randomClickCount = 0;
+        randomPopupShown = false;
+        firstRandomClickTime = null;
+        const cells = document.querySelectorAll(".cell");
+        cells.forEach(cell => cell.classList.remove("flipped"));
+    });
+
+    // Modal functions
+    const modal = document.getElementById("modal");
+    const modalMessage = document.getElementById("modal-message");
+    const modalClose = document.getElementById("modal-close");
+
+    function showModal(message) {
+        modalMessage.textContent = message;
+        modal.style.display = "flex";
+    }
+
+    modalClose.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    // Hide modal if clicking outside of the content.
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+</script>
+</body>
+</html>
