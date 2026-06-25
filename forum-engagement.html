@@ -16,8 +16,8 @@
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
     <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js"></script>
 
-    <!-- Babel for rendering React inside the browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Babel for rendering React inside the browser (pinned: "latest" can change JSX defaults and silently break the page) -->
+    <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
 
     <!-- Recharts for graphs (Pinned to a stable compatible version) -->
     <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js" crossorigin></script>
@@ -35,9 +35,58 @@
 </head>
 <body>
 <!-- The React App will render inside this div -->
-<div id="root"></div>
+<div id="root">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:0.875rem;">
+        Loading dashboard…
+    </div>
+</div>
 
-<script type="text/babel">
+<!--
+  Plain JavaScript watchdog (NOT text/babel, so it still runs even if Babel fails to load).
+  If the app hasn't rendered shortly after load, the page would otherwise be silently blank.
+  Instead we detect the empty #root and report exactly which dependency is missing.
+-->
+<script>
+    (function () {
+        function checkBoot() {
+            var root = document.getElementById('root');
+            if (!root) return;
+
+            // The React app replaces #root's contents with a <div class="min-h-screen ...">.
+            // Our loading placeholder has no className, so if a real React node exists we booted fine.
+            var booted = root.querySelector('[class]');
+            if (booted) return;
+
+            var missing = [];
+            if (!window.React) missing.push('React');
+            if (!window.ReactDOM) missing.push('ReactDOM');
+            if (!window.Recharts) missing.push('Recharts');
+            if (!window.Papa) missing.push('PapaParse');
+            if (!window.Babel) missing.push('Babel');
+
+            var detail = missing.length
+                ? 'These required scripts failed to load: <strong>' + missing.join(', ') + '</strong>.<br>' +
+                  'They are loaded from public CDNs (unpkg.com, cdnjs, cdn.tailwindcss.com), which may be blocked ' +
+                  'by your network. Try a different network, or download the libraries locally.'
+                : 'All libraries loaded but the app did not start — likely a script error.';
+
+            root.innerHTML =
+                '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">' +
+                  '<div style="max-width:30rem;width:100%;background:#fff;border:1px solid #fecaca;border-radius:1rem;' +
+                  'box-shadow:0 10px 25px rgba(0,0,0,.06);padding:2rem;text-align:center;font-family:ui-sans-serif,system-ui,sans-serif;">' +
+                    '<h1 style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 .5rem;">Dashboard failed to load</h1>' +
+                    '<p style="color:#475569;font-size:.875rem;line-height:1.5;margin:0 0 1rem;">' + detail + '</p>' +
+                    '<p style="color:#94a3b8;font-size:.75rem;margin:0;">Open the browser console (F12) for the full error.</p>' +
+                  '</div>' +
+                '</div>';
+        }
+        window.addEventListener('DOMContentLoaded', function () {
+            setTimeout(checkBoot, 4000);
+        });
+    })();
+</script>
+
+<script type="text/babel" data-presets="react">
     const { useState, useMemo } = React;
     const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } = window.Recharts;
 
@@ -87,6 +136,44 @@
         }
         return null;
     };
+
+    // --- Error Boundary: a render-time crash shows a message instead of unmounting to a blank page ---
+    class ErrorBoundary extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = { error: null };
+        }
+        static getDerivedStateFromError(error) {
+            return { error };
+        }
+        componentDidCatch(error, info) {
+            console.error("Dashboard render error:", error, info);
+        }
+        render() {
+            if (this.state.error) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-6">
+                        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-red-100">
+                            <h1 className="text-xl font-bold text-slate-900 mb-2">Something went wrong</h1>
+                            <p className="text-slate-500 text-sm mb-4">
+                                The dashboard hit an error while rendering. Your file may be in an unexpected format.
+                            </p>
+                            <pre className="text-left text-xs bg-red-50 text-red-600 p-3 rounded-lg overflow-auto max-h-40 whitespace-pre-wrap">
+                                {String(this.state.error && this.state.error.message || this.state.error)}
+                            </pre>
+                            <button
+                                onClick={() => { window.__INITIAL_DATA__ = null; location.reload(); }}
+                                className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium"
+                            >
+                                Reload
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            return this.props.children;
+        }
+    }
 
     function App() {
         const [data, setData] = useState(() => window.__INITIAL_DATA__ || null);
@@ -394,7 +481,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin><\/script>
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"><\/script>
     <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js"><\/script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+    <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"><\/script>
     <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js" crossorigin><\/script>
 
     <style>
@@ -409,7 +496,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/babel">${babelScript}<\/script>
+    <script type="text/babel" data-presets="react">${babelScript}<\/script>
 </body>
 </html>`;
 
@@ -693,8 +780,22 @@
     }
 
     // Render Application
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    try {
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <ErrorBoundary>
+                <App />
+            </ErrorBoundary>
+        );
+    } catch (err) {
+        // A failure here (e.g. a missing CDN global) would otherwise leave a blank page — surface it.
+        console.error("Failed to start dashboard:", err);
+        document.getElementById('root').innerHTML =
+            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;' +
+            'font-family:ui-sans-serif,system-ui,sans-serif;color:#dc2626;text-align:center;">' +
+            'Failed to start the dashboard: ' + (err && err.message ? err.message : err) +
+            '<br>Open the console (F12) for details.</div>';
+    }
 </script>
 </body>
 </html>
