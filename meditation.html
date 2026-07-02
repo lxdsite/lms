@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mindfulness-Based Stress Reset</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" nonce="a02387fc4a534ebab7a0071c264" src="//local.adguard.org?ts=1782960574942&amp;type=content-script&amp;dmn=srv1042-files.hstgr.io&amp;url=https%3A%2F%2Fsrv1042-files.hstgr.io%2F3dded76aa2467164%2Fapi%2Fraw%2Fpublic_html%2Fmeditation.html%3F&amp;app=com.microsoft.edgemac&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="a02387fc4a534ebab7a0071c264" src="//local.adguard.org?ts=1782960574942&amp;name=AdGuard%20Extra&amp;type=user-script"></script><link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            background: linear-gradient(to bottom, #fefdf9, #eef5f2);
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+            line-height: 1.8;
+        }
+
+        header {
+            background: #e0ece4;
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.4em;
+            color: #2e5344;
+        }
+
+        main {
+            max-width: 750px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .step {
+            display: none;
+            padding: 30px;
+            border-radius: 10px;
+            background: #ffffffcc;
+            margin-bottom: 40px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        h2 {
+            color: #305144;
+            font-size: 1.6em;
+            margin-top: 0;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #305144;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background: #3c6e57;
+        }
+
+        label {
+            display: block;
+            margin: 20px 0 10px;
+            font-style: italic;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            font-family: 'Lora', serif;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .breath-visual {
+            width: 120px;
+            height: 120px;
+            margin: 30px auto;
+            background: #cbeade;
+            border-radius: 50%;
+            animation: breathe 8s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(10px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mindfulness-Based Stress Reset</h1>
+    <p>Release tension. Reconnect. Recenter.</p>
+</header>
+
+<main>
+    <label>
+        <input type="checkbox" id="ambientToggle" onchange="toggleAmbient()"> Play ambient sound
+    </label>
+    <audio id="ambientAudio" loop>
+        <source src="ambient-sound.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="meditation-steps">
+        <div class="step active">
+            <h2>Before you begin:</h2>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0;">✅</span>
+                    Find a quiet spot where you won’t be disturbed.
+                </li>
+                <li style="position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0;">✅</span>
+                    You can sit or lie down—just make sure you’re comfortable.
+                </li>
+                <li style="position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0;">✅</span>
+                    Turn your phone on silent or airplane mode for just 10 minutes.
+                </li>
+                <li style="position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0;">✅</span>
+                    Practice <strong>non-judgmental observation</strong>.
+                    <div style="margin-left: 20px">
+                        Non-judgmental observation is the practice of noticing thoughts, feelings, or sensations as they arise—<span style="text-decoration: underline;"><strong>without</strong></span> labeling them as good or bad, right or wrong. It can be especially powerful in contexts where self-criticism or concern for 'face' is prevalent. Mindfulness offers a way to observe these thoughts without getting caught by them.
+                    </div>
+                </li>
+                <li style="position: relative; padding-left: 25px;">
+                    <span style="position: absolute; left: 0;">✅</span>
+                    You can choose to go through this activity by following the text descriptions or listening to the audio clip provided at each step. We do <span style="text-decoration: underline;">recommend</span> you listen to the audio clip while participating in this activity.
+                </li>                
+            </ul>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 1: Get Comfortable</h2>
+            <p>Get comfortable. Loosen any tight clothing. Close your eyes. Quiet your mind. Close your eyes and be quiet. Slow down. Take a deep breath. Hold it. Now let it go.</p>
+            <p>🟡 <span style="font-style: italic;">Tip for busy brains:</span> If thoughts pop up, label them “thinking” and return to your breath.</p>
+            <audio controls>
+                <source src="audio/Step1.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: Do the Body Scan</h2>
+            <p>Assume a comfortable position with your eyes closed. Bring your awareness into your body. Scan for any areas of tightness or tension. Soften your muscles and invite relaxation into them. </p>
+            <p>Allow your whole body to settle into a state of ease. Release any holding or stress you detect. Feel the surface below, supporting and cradling your body. </p>
+            <p>As you prepare mentally, know that physical relaxation will follow. Clear your mind, let all distracting thoughts fade away. </p>
+            <p>Remain quiet, focused only on your breath and bodily sensations. Allow relaxation to unfold with each exhale.</p>
+            <p>🔍 <span style="font-style: italic;">Middle Manager Insight:</span> Notice if stress shows up in your shoulders, back, or gut. That’s your body's dashboard telling you it's time for a reset.</p>
+            <audio controls>
+                <source src="audio/Step2.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: Tense & Release</h2>
+            <p>💡 <span style="font-style: italic;">Think of it like a system reboot. You're flushing tension out of each zone.</span></p>
+            <p>Now tense and relax each muscle group for five to ten seconds each. Do it in the following order:</p>
+            <ul>
+                <li><em>Forehead.</em> Wrinkle your forehead. Try to make your eyebrows touch your hairline for five seconds, then relax.</li>
+                <li><em>Eyes</em> and <em>nose.</em> Close your eyes as tightly as you can for five seconds, then relax.</li>
+                <li><em>Lips,</em> <em>cheeks,</em> and <em>jaw.</em> Draw the corners of your mouth back and grimace for five seconds, then relax.</li>
+                <li><em>Hands.</em> Extend your arms in front of you. Clench your fists tightly for five seconds, then relax.</li>
+                <li><em>Forearms.</em> Extend your arms out against an invisible wall and push forward for five seconds, then relax.</li>
+                <li><em>Upper arms.</em> Bend your elbows and tense your biceps for five seconds, then relax.</li>
+                <li><em>Shoulders.</em> Shrug your shoulders up to your ears for five seconds, then relax.</li>
+                <li><em>Back.</em> Arch your back off the floor for five seconds, then relax.</li>
+                <li><em>Stomach.</em> Tighten your stomach muscles by lifting your legs off the ground about two inches for five seconds, then relax.</li>
+                <li><em>Hips</em> and <em>buttocks.</em> Tighten your hip and buttock muscles for five seconds, then relax.</li>
+                <li><em>Thighs.</em> Tighten your thigh muscles by pressing your legs together as tightly as you can for five seconds, then relax.</li>
+                <li><em>Feet.</em> Bend your ankles toward your body as far as you can for five seconds, then point your toes for five seconds, then relax.</li>
+                <li><em>Toes.</em> Curl your toes as tightly as you can for five seconds, then relax.</li>
+            </ul>
+
+            <audio controls>
+                <source src="audio/Step3.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 4: Transitioning</h2>
+            <p>Turn your attention to your breath. Breathe slowly and deeply without effort. Imagine breathing in soothing, liquid light. Let it fill you and gently exhale.</p>
+            <p style="font-style: italic;">🧭 Every breath is a chance to reset your perspective.</p>
+            <audio controls>
+                <source src="audio/Step4.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 5: Breath Work</h2>
+            <p>Now, bring your full attention to your breathing. Don't try to manipulate your breath, just let it flow naturally. </p>
+            <p>Notice the gentle expansion as air fills your lungs...and soft contraction as it escapes. Breath slowly, smoothly and profoundly but without any force. Visualize your breath as a wave, fluidly rolling through your body.</p>
+            <p>Feel your belly rise as you inhale, inviting vitality inward. Pause comfortably. Then allow your abdomen to gently fall back down as air rushes out. </p>
+            <p>Establish an easy, lulling rhythm. Your breath is an anchor, keeping you deeply connected to the present.</p>
+            <p>Allow thoughts to fade into the background. The sensation of air, pouring in and out, becoming the only thing that matters. Each inhale renews. Each exhale relaxes a bit deeper. Your breathing becomes a pathway to profound peace within.</p>
+            <div class="breath-visual"></div>
+            <audio controls>
+                <source src="audio/Step5.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 6: Gratitude & Warmth</h2>
+            <p>Turn your attention to the heaviness and warmth of your body. Let all the energy seep away.</p>
+            <p>Now, with your body completely relaxed, relax your mind. Picture a person for whom you have loving feelings, feelings of gratitude, or feelings of reverence.</p>
+            <p>Concentrate fully on the person and on your feelings for him or her for a moment without letting any other thoughts enter your mind. Begin now.</p>
+            <p>If a thought enters your mind , turn your attention to your breath and refocus on the person you are thinking about.</p>
+            <p style="font-style: italic;">🤝 Let this feeling restore your sense of connection—even on tough days.</p>
+            <audio controls>
+                <source src="audio/Step6.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Next</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 7: Return to the Present</h2>
+            <p>When you feel ready, slowly start to bring your awareness back to your body. Wiggle your fingers and toes. Stretch your arms and legs. Roll your head from side to side gently.</p>
+            <p>Before you open your eyes, take a few moments to orient yourself. Notice how your body feels - let the relaxation continue to infuse you.</p>
+            <p>Now let’s start to deepen your breath. With each inhalation, invite renewal. With each exhalation, draw in some extra energy and leave your stress beyond as we get ready to return.</p>
+            <p>When you feel ready, open your eyes, or sit up.</p>
+            <audio controls>
+                <source src="audio/Step7.m4a" type="audio/mpeg">
+            </audio>
+            <button onclick="nextStep()">Finish</button>
+        </div>
+
+        <div class="step">
+            <h2>You're Done 🌿</h2>
+            <p>You’ve just completed a full-body and mind reset. Now’s the perfect time to reflect, not just on what felt heavy—but on what you want to do next. This activity invites you to <strong>carry your stress strategies into your Individual Development Plan</strong> by integrating what you’ve learned into how you lead, plan, and live.</p>
+            <p>Your journal entry has been saved locally to your browser.</p>
+            <h3>Activity Steps:</h3>
+            <div style="margin: 20px;">
+                <ol>
+                    <li>
+                        <span style="font-weight: bold;">Pause & Reflect:</span><br>
+                        <span>After the stress relaxation, jot down:</span>
+                        <ul style="margin-top: 10px;">
+                            <li>What surprised you about how your body felt?</li>
+                            <li>Which part of the experience felt most nourishing or needed?</li>
+                            <li>What does your body <span style="font-style: italic;">want more or less of</span> in your daily life?</li>
+                        </ul>
+                    </li>
+                </ol>
+
+            </div>
+
+
+        </div>
+    </div>
+</main>
+
+<script>
+    // How long to wait after each audio ends (in milliseconds)
+    const PAUSE_AFTER_STEP_MS = 2000; // change to 2000 for 2s
+
+    let currentStep = 0;
+    const steps = document.querySelectorAll('.step');
+
+    function nextStep() {
+        // 1) Pause & reset the previous step’s audio
+        const prevAudio = steps[currentStep].querySelector('audio');
+        if (prevAudio) {
+            prevAudio.pause();
+            prevAudio.currentTime = 0;
+            prevAudio.onended = null;  // clear any old handler
+        }
+
+        // 2) Hide the old step, advance the counter, show the new step
+        steps[currentStep].classList.remove('active');
+        currentStep++;
+        if (!steps[currentStep]) return;
+        steps[currentStep].classList.add('active');
+
+        // 3) Play the new step’s audio and bind its end → advance after a pause
+        const nextAudio = steps[currentStep].querySelector('audio');
+        if (nextAudio) {
+            nextAudio.currentTime = 0;
+            nextAudio.play().catch(() => {/* ignore play errors */});
+            nextAudio.onended = () => {
+                setTimeout(nextStep, PAUSE_AFTER_STEP_MS);
+            };
+        }
+    }
+
+    function toggleAmbient() {
+        const ambient = document.getElementById('ambientAudio');
+        const toggle  = document.getElementById('ambientToggle');
+        if (toggle.checked) {
+            ambient.volume = 0.3;
+            ambient.play();
+        } else {
+            ambient.pause();
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Load saved journal entry if present
+        const saved = localStorage.getItem('meditationReflection');
+        if (saved) {
+            const journalEl = document.getElementById('journalEntry');
+            if (journalEl) journalEl.value = saved;
+        }
+
+        // If the very first step has audio, auto-advance after it ends
+        const firstAudio = steps[0].querySelector('audio');
+        if (firstAudio) {
+            firstAudio.onended = () => setTimeout(nextStep, PAUSE_AFTER_STEP_MS);
+        }
+    });
+</script>
+
+
+
+</body>
+</html>
