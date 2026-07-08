@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forum → PDF Converter</title>
+<style>
+  /* ============================================================= *
+   *  App shell (screen only)                                      *
+   * ============================================================= */
+  :root {
+    --navy: #003b5c;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e2e8f0;
+    --bg: #eef1f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+
+  .appbar {
+    background: var(--navy); color: #fff;
+    padding: 14px 22px; display: flex; align-items: baseline; gap: 14px;
+  }
+  .appbar h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .01em; }
+  .appbar .sub { font-size: 12.5px; color: #b7cede; }
+
+  .wrap { max-width: 860px; margin: 22px auto; padding: 0 18px; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 22px; box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  }
+  .panel h2 { font-size: 14px; margin: 0 0 4px; color: var(--navy); }
+  .panel p.hint { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+
+  .dropzone {
+    border: 2px dashed #c3ccd6; border-radius: 10px; background: #fafbfc;
+    padding: 30px 20px; text-align: center; color: var(--muted);
+    transition: border-color .15s, background .15s; cursor: pointer;
+  }
+  .dropzone.drag { border-color: var(--navy); background: #f0f7fc; color: var(--navy); }
+  .dropzone strong { color: var(--ink); }
+  .dropzone .big { font-size: 15px; margin-bottom: 4px; }
+  .linkbtn { background: none; border: none; color: #005b8f; font: inherit;
+    text-decoration: underline; cursor: pointer; padding: 0; }
+
+  .settings { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px;
+    padding-top: 16px; border-top: 1px solid var(--line); align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .field input[type=text], .field input[type=number] {
+    font: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid #cbd5e1;
+    border-radius: 7px; background: #fff; }
+  .field.grow { flex: 1 1 220px; }
+  .field.check { flex-direction: row; align-items: center; gap: 7px; }
+  .field.check label { font-size: 12.5px; color: var(--ink); }
+
+  .actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  .btn {
+    background: var(--navy); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 18px; font: inherit; font-weight: 600; font-size: 13.5px;
+    cursor: pointer; }
+  .btn:disabled { background: #b8c2cc; cursor: default; }
+  .btn.secondary { background: #fff; color: var(--navy); border: 1px solid #c3ccd6; }
+  .status { font-size: 12.5px; color: var(--muted); }
+  .status.ok { color: #166534; }
+  .status.err { color: #b42318; }
+
+  .printhint { font-size: 12px; color: var(--muted); background: #f8fafc;
+    border: 1px solid var(--line); border-left: 3px solid var(--navy);
+    border-radius: 6px; padding: 10px 14px; margin-top: 14px; }
+  .printhint b { color: var(--ink); }
+
+  .preview-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--muted); margin: 26px 0 10px; text-align: center; }
+
+  /* ============================================================= *
+   *  The formal document (screen preview + print)                 *
+   * ============================================================= */
+  #doc { display: none; }               /* revealed after a file loads */
+  #doc.ready { display: block; }
+
+  @media screen {
+    #doc.ready {
+      background: #fff; max-width: 820px; margin: 0 auto 40px;
+      padding: 42px 52px; border-radius: 4px;
+      box-shadow: 0 6px 24px rgba(15,23,42,.10);
+    }
+  }
+
+  .doc {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #1f2937; font-size: 11pt; line-height: 1.62;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .doc a { color: #005b8f; text-decoration: none; }
+
+  .doc .cover { text-align: center; padding-top: 22mm; page-break-after: always; }
+  .doc .cover .eyebrow { text-transform: uppercase; letter-spacing: .28em;
+    font-size: 9pt; color: #7b8794; margin-bottom: 1.1em; }
+  .doc .cover h1 { font-size: 26pt; line-height: 1.2; color: #003b5c;
+    font-weight: 700; margin: 0 auto .55em; max-width: 15em; }
+  .doc .cover .rule { width: 64px; height: 2.5px; background: #003b5c; margin: 0 auto 1.5em; }
+  .doc .cover .subtitle { font-size: 12.5pt; color: #52606d; font-style: italic; margin-bottom: 3em; }
+  .doc .meta { display: inline-block; text-align: left; border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0; padding: 1.1em 1.6em; }
+  .doc .meta div { display: flex; gap: 1.4em; padding: .28em 0; font-size: 10.5pt; }
+  .doc .meta .k { color: #7b8794; min-width: 9.5em; }
+
+  .doc .section-title { font-size: 15pt; color: #003b5c; font-weight: 700;
+    border-bottom: 2px solid #003b5c; padding-bottom: .3em; margin: 1.4em 0 1.1em;
+    break-after: avoid; }
+  .doc .prompt { margin-bottom: 1.4em; }
+  .doc .prompt-frame { border: 1px solid #e2e8f0; border-left: 4px solid #003b5c;
+    border-radius: 6px; background: #fbfcfd; padding: 6px 22px 14px; }
+  .doc .prompt-frame img { max-width: 100%; height: auto; }
+  .doc .prompt-byline { font-size: 9.5pt; color: #7b8794; margin: 0 0 .4em;
+    padding-bottom: .5em; border-bottom: 1px dotted #d7dee6; }
+
+  .doc .response { border: 1px solid #e5e9ef; border-radius: 7px;
+    padding: 12px 20px 3px; margin-bottom: 12px; orphans: 2; widows: 2; }
+  .doc .resp-head { display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1em; border-bottom: 1px solid #eef1f5; padding-bottom: .5em;
+    margin-bottom: .7em; break-after: avoid; }
+  .doc .resp-name { font-weight: 700; color: #1a2733; font-size: 11.5pt; }
+  .doc .resp-num { color: #9aa4af; font-weight: 400; margin-right: .5em; }
+  .doc .resp-date { color: #7b8794; font-size: 9.5pt; white-space: nowrap; font-style: italic; }
+  .doc .resp-reply-to { font-size: 9pt; color: #94a3b8; font-style: italic; margin: -.3em 0 .7em; }
+  .doc .resp-body p { margin: 0 0 .7em; }
+  .doc .resp-body ol, .doc .resp-body ul { margin: .3em 0 .7em; padding-left: 1.4em; }
+  .doc .response.nested { margin-left: 26px; border-left: 3px solid #cfd8e3; background: #fafbfc; }
+  .doc .footer-note { color: #9aa4af; font-size: 8.5pt; text-align: center;
+    margin-top: 22px; padding-top: 10px; border-top: 1px solid #eef1f5; }
+
+  /* ============================================================= *
+   *  Print                                                        *
+   * ============================================================= */
+  @media print {
+    .no-print { display: none !important; }
+    html, body { background: #fff; }
+    #doc.ready { display: block; margin: 0; max-width: none; padding: 0;
+      box-shadow: none; border-radius: 0; background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<header class="appbar no-print">
+  <h1>Moodle Forum → PDF</h1>
+  <span class="sub">Turn an exported forum discussion into a formal PDF</span>
+</header>
+
+<main class="wrap no-print">
+  <section class="panel">
+    <h2>1 · Load your forum export</h2>
+    <p class="hint">Export a discussion from Moodle (the <b>.json</b> file), then drop it below.
+      Everything runs in your browser — nothing is uploaded.</p>
+
+    <div class="dropzone" id="drop">
+      <div class="big">Drop your forum <strong>.json</strong> here</div>
+      <div>or <button class="linkbtn" id="browse" type="button">choose a file</button></div>
+      <input type="file" id="file" accept=".json,application/json" hidden>
+    </div>
+
+    <div class="settings">
+      <div class="field grow">
+        <label for="title">Document title (optional — defaults to the discussion subject)</label>
+        <input type="text" id="title" placeholder="e.g. Finance Onboarding Survey">
+      </div>
+      <div class="field">
+        <label for="tz">Time zone (UTC offset, hours)</label>
+        <input type="number" id="tz" value="7" step="0.5" style="width:96px">
+      </div>
+      <div class="field check">
+        <input type="checkbox" id="remote">
+        <label for="remote">Load remote prompt images</label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="download" disabled>Download PDF</button>
+      <span class="status" id="status">No file loaded yet.</span>
+    </div>
+
+    <div class="printhint" id="printhint" style="display:none">
+      <b>In the print dialog:</b> set <b>Destination</b> = “Save as PDF”, <b>Margins</b> = Default,
+      turn <b>on</b> “Background graphics”, and turn <b>off</b> “Headers and footers”.
+    </div>
+  </section>
+
+  <div class="preview-label" id="previewLabel" style="display:none">Preview</div>
+</main>
+
+<style id="page-style"></style>
+<div id="doc" class="doc"></div>
+
+<script>
+"use strict";
+
+/* ---------------------------------------------------------------- *
+ *  Extract the list of posts from the parsed JSON (tolerates [[…]]) *
+ * ---------------------------------------------------------------- */
+function looksLikePosts(x) {
+  return Array.isArray(x) && x.length > 0
+    && x.every(i => i && typeof i === "object" && !Array.isArray(i))
+    && x.some(i => "message" in i && "id" in i);
+}
+function extractPosts(data) {
+  if (looksLikePosts(data)) return data;
+  if (Array.isArray(data)) {
+    for (const it of data) { const f = extractPosts(it); if (f) return f; }
+  } else if (data && typeof data === "object") {
+    for (const v of Object.values(data)) { const f = extractPosts(v); if (f) return f; }
+  }
+  return null;
+}
+
+/* ---------------------------------------------------------------- *
+ *  Sanitize a reply body down to a formal, consistent subset        *
+ * ---------------------------------------------------------------- */
+const ALLOWED = new Set(["P","BR","STRONG","B","EM","I","U","UL","OL","LI","BLOCKQUOTE","A"]);
+const DROP = new Set(["SCRIPT","STYLE","IMG"]);
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+function walk(node) {
+  let out = "";
+  node.childNodes.forEach(child => {
+    if (child.nodeType === 3) {              // text
+      out += escapeHtml(child.nodeValue);
+    } else if (child.nodeType === 1) {       // element
+      const tag = child.tagName;
+      if (DROP.has(tag)) return;
+      if (!ALLOWED.has(tag)) { out += walk(child); return; }  // unwrap div/span/…
+      if (tag === "BR") { out += "<br>"; return; }
+      if (tag === "A") {
+        const href = child.getAttribute("href") || "";
+        out += /^(https?:|mailto:)/i.test(href)
+          ? '<a href="' + escapeAttr(href) + '">' + walk(child) + "</a>"
+          : "<a>" + walk(child) + "</a>";
+        return;
+      }
+      const t = tag.toLowerCase();
+      out += "<" + t + ">" + walk(child) + "</" + t + ">";
+    }
+  });
+  return out;
+}
+function sanitizeReply(html) {
+  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  let s = walk(doc.body);
+  s = s.replace(/(<br>\s*){3,}/g, "<br><br>").replace(/\s+/g, " ")
+       .replace(/(<br>\s*)+$/, "").trim();
+  return s;
+}
+
+/* Remove network-fetched assets from the (trusted) prompt HTML. */
+function neutralizeRemote(html) {
+  return html
+    .replace(/<img\b[^>]*?\bsrc\s*=\s*["']https?:\/\/[^>]*?>/gi, "")
+    .replace(/<link\b[^>]*?\bhref\s*=\s*["']https?:\/\/[^>]*?>/gi, "")
+    .replace(/<script\b[^>]*?\bsrc\s*=\s*["']https?:\/\/[\s\S]*?<\/script>/gi, "")
+    .replace(/url\(\s*["']?https?:\/\/[^)]*\)/gi, "none");
+}
+
+/* ---------------------------------------------------------------- *
+ *  Rebuild the thread                                               *
+ * ---------------------------------------------------------------- */
+function buildThread(posts) {
+  const live = posts.filter(p => !p.deleted);
+  const byId = new Map(live.map(p => [p.id, p]));
+  const children = new Map();
+  const push = (k, v) => { if (!children.has(k)) children.set(k, []); children.get(k).push(v); };
+  let root = null;
+  for (const p of live) {
+    const parent = p.parent || 0;
+    if (parent === 0 || !byId.has(parent)) {
+      if (parent === 0 && (root === null || p.created < root.created)) root = p;
+      push(0, p);
+    } else {
+      push(parent, p);
+    }
+  }
+  if (root === null) root = live.reduce((a, b) => (a.created <= b.created ? a : b));
+
+  const ordered = [];
+  const bycreated = a => a.slice().sort((x, y) => x.created - y.created);
+  function walkT(id, depth) {
+    for (const k of bycreated(children.get(id) || [])) {
+      if (k.id === root.id) continue;
+      ordered.push([k, depth]);
+      walkT(k.id, depth + 1);
+    }
+  }
+  for (const p of bycreated((children.get(0) || []).filter(p => p.id !== root.id))) {
+    ordered.push([p, 0]); walkT(p.id, 1);
+  }
+  walkT(root.id, 0);
+
+  const seen = new Set(), replies = [];
+  for (const [p, d] of ordered) { if (seen.has(p.id)) continue; seen.add(p.id); replies.push([p, d]); }
+  return { root, replies, byId };
+}
+
+/* ---------------------------------------------------------------- *
+ *  Dates (locale-independent, via a fixed UTC offset)               *
+ * ---------------------------------------------------------------- */
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const pad = n => String(n).padStart(2, "0");
+function shifted(ts, offH) { return new Date((ts + offH * 3600) * 1000); }
+function fmtDate(ts, offH) {
+  const d = shifted(ts, offH);
+  return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear();
+}
+function fmtDateTime(ts, offH) {
+  const d = shifted(ts, offH);
+  return fmtDate(ts, offH) + ", " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+}
+function dateRange(posts, offH) {
+  if (!posts.length) return "";
+  const t = posts.map(p => p.created), lo = Math.min(...t), hi = Math.max(...t);
+  return fmtDate(lo, offH) === fmtDate(hi, offH)
+    ? fmtDate(lo, offH) : fmtDate(lo, offH) + " – " + fmtDate(hi, offH);
+}
+function nowStr(offH) {
+  const d = new Date(Date.now() + offH * 3600 * 1000);
+  return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear()
+    + ", " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes());
+}
+
+/* ---------------------------------------------------------------- *
+ *  Render the document                                              *
+ * ---------------------------------------------------------------- */
+function cssStr(t) { return t.replace(/\\/g, "\\\\").replace(/"/g, '\\"'); }
+
+function setPageStyle(title) {
+  const short = title.length <= 42 ? title : title.slice(0, 39) + "…";
+  document.getElementById("page-style").textContent =
+    '@page { size: A4; margin: 20mm 18mm 18mm 18mm;' +
+    '  @top-right { content: "' + cssStr(title) + '"; font-family: Georgia, serif; font-size: 8.5pt; color: #9aa4af; }' +
+    '  @bottom-center { content: "' + cssStr(short) + '  \\00B7  Page " counter(page) " of " counter(pages);' +
+    '     font-family: Georgia, serif; font-size: 8.5pt; color: #9aa4af; } }' +
+    '@page :first { @top-right { content: none; } @bottom-center { content: none; } }';
+}
+
+function renderDocument(posts, opts) {
+  const { root, replies } = buildThread(posts);
+  const replyPosts = replies.map(r => r[0]);
+  const offH = opts.tz;
+  const title = (opts.title
+    || (root.subject || "Forum Responses").replace(/^\s*Re:\s*/i, "").trim()
+    || "Forum Responses");
+
+  setPageStyle(title);
+  document.title = title;
+
+  const e = escapeHtml;
+  const rows = [
+    ["Original post by", root.userfullname || "—"],
+    ["Total responses", String(replyPosts.length)],
+    ["Response period", dateRange(replyPosts, offH) || "—"],
+    ["Generated", nowStr(offH)],
+  ];
+
+  let promptHtml = root.message || "";
+  if (!opts.remote) promptHtml = neutralizeRemote(promptHtml);
+
+  const parts = [];
+  parts.push('<section class="cover">');
+  parts.push('<div class="eyebrow">Moodle Forum &middot; Discussion Export</div>');
+  parts.push('<h1>' + e(title) + "</h1>");
+  parts.push('<div class="rule"></div>');
+  parts.push('<div class="subtitle">Forum Responses</div>');
+  parts.push('<div class="meta">');
+  for (const [k, v] of rows)
+    parts.push('<div><span class="k">' + e(k) + '</span><span class="v">' + e(v) + "</span></div>");
+  parts.push("</div></section>");
+
+  parts.push('<section class="prompt"><h2 class="section-title">Survey Prompt</h2>');
+  parts.push('<div class="prompt-frame">');
+  parts.push('<p class="prompt-byline">Posted by ' + e(root.userfullname || "—")
+    + " on " + e(fmtDateTime(root.created, offH)) + "</p>");
+  parts.push(promptHtml);
+  parts.push("</div></section>");
+
+  parts.push('<section class="responses"><h2 class="section-title">Responses ('
+    + replyPosts.length + ")</h2>");
+  const byId = new Map([[root.id, root]]);
+  replies.forEach(([p]) => byId.set(p.id, p));
+  replies.forEach(([post, depth], i) => {
+    parts.push('<article class="response' + (depth > 0 ? " nested" : "") + '">');
+    parts.push('<div class="resp-head"><span class="resp-name"><span class="resp-num">'
+      + (i + 1) + '.</span>' + e(post.userfullname || "Anonymous") + "</span>"
+      + '<span class="resp-date">' + e(fmtDateTime(post.created, offH)) + "</span></div>");
+    if (depth > 0) {
+      const parent = byId.get(post.parent);
+      if (parent && parent.id !== root.id)
+        parts.push('<div class="resp-reply-to">In reply to ' + e(parent.userfullname || "") + "</div>");
+    }
+    const body = sanitizeReply(post.message || "") || "<em>(No content)</em>";
+    parts.push('<div class="resp-body">' + body + "</div></article>");
+  });
+  parts.push('<p class="footer-note">End of responses &middot; ' + replyPosts.length
+    + " in total &middot; generated " + e(nowStr(offH)) + "</p>");
+  parts.push("</section>");
+
+  const doc = document.getElementById("doc");
+  doc.innerHTML = parts.join("\n");
+  doc.classList.add("ready");
+  return { count: replyPosts.length, title };
+}
+
+/* ---------------------------------------------------------------- *
+ *  Wiring                                                           *
+ * ---------------------------------------------------------------- */
+let lastPosts = null;
+const $ = id => document.getElementById(id);
+const statusEl = $("status");
+
+function setStatus(msg, kind) {
+  statusEl.textContent = msg;
+  statusEl.className = "status" + (kind ? " " + kind : "");
+}
+function opts() {
+  return {
+    title: $("title").value.trim(),
+    tz: parseFloat($("tz").value) || 0,
+    remote: $("remote").checked,
+  };
+}
+function rerender() {
+  if (!lastPosts) return;
+  try {
+    const r = renderDocument(lastPosts, opts());
+    setStatus("Loaded " + r.count + " responses — ready to download.", "ok");
+    $("download").disabled = false;
+    $("printhint").style.display = "block";
+    $("previewLabel").style.display = "block";
+  } catch (err) {
+    console.error(err);
+    setStatus("Could not render: " + err.message, "err");
+  }
+}
+function loadFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try { data = JSON.parse(reader.result); }
+    catch (err) { setStatus("That file is not valid JSON.", "err"); return; }
+    const posts = extractPosts(data);
+    if (!posts) { setStatus("No forum posts found in this file.", "err"); return; }
+    lastPosts = posts;
+    if (!$("title").value.trim()) {
+      const subj = (posts.find(p => (p.parent || 0) === 0) || {}).subject || "";
+      $("title").placeholder = subj.replace(/^\s*Re:\s*/i, "").trim() || "Forum Responses";
+    }
+    rerender();
+  };
+  reader.onerror = () => setStatus("Could not read that file.", "err");
+  reader.readAsText(file);
+}
+
+const drop = $("drop"), fileInput = $("file");
+$("browse").addEventListener("click", () => fileInput.click());
+drop.addEventListener("click", e => { if (e.target.id !== "browse") fileInput.click(); });
+fileInput.addEventListener("change", () => loadFile(fileInput.files[0]));
+["dragenter", "dragover"].forEach(ev =>
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("drag"); }));
+["dragleave", "drop"].forEach(ev =>
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("drag"); }));
+drop.addEventListener("drop", e => {
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+["title", "tz", "remote"].forEach(id => $(id).addEventListener("change", rerender));
+$("download").addEventListener("click", () => window.print());
+</script>
+</body>
+</html>
