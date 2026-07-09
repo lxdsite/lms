@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hanoi Bootcamp — 4-Day Sprint Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --p302: #00558C;
+    --p302-dark: #003F6B;
+    --p302-light: #E6F0F7;
+    --cream: #F7F5F0;
+    --ink: #1A1A18;
+    --ink-mid: #4A4A46;
+    --ink-soft: #8A8A84;
+    --rule: #DEDAD2;
+    --white: #FFFFFF;
+    --tag-sprint-bg: #F0EDE6;
+    --tag-sprint-color: #3A3A36;
+    --tag-immersive-bg: #E6F0F7;
+    --tag-immersive-color: #00558C;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 56px 36px 80px;
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    border-top: 2.5px solid var(--p302);
+    padding-top: 28px;
+    margin-bottom: 40px;
+  }
+  .masthead-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--p302);
+    margin-bottom: 12px;
+  }
+  .masthead-title {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .masthead-title em {
+    font-family: 'Libre Baskerville', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--p302);
+    letter-spacing: -0.01em;
+  }
+  .masthead-meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-top: 14px;
+    border-top: 0.5px solid var(--rule);
+    padding-top: 14px;
+  }
+  .masthead-meta span { display: flex; align-items: center; gap: 6px; }
+  .meta-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--p302); flex-shrink: 0; }
+
+  /* ── SUCCESS BAR ── */
+  .success-bar {
+    background: var(--p302);
+    border-radius: 3px;
+    padding: 16px 22px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+  }
+  .success-bar-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+    padding-top: 2px;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+  .success-bar-text {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.92);
+    font-style: italic;
+  }
+
+  /* ── DAY 0 STRIP ── */
+  .day0-strip {
+    border: 0.5px solid var(--rule);
+    border-radius: 3px;
+    padding: 14px 20px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--white);
+  }
+  .day0-col {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    line-height: 1.4;
+    min-width: 60px;
+    text-align: center;
+  }
+  .day0-divider { width: 0.5px; height: 32px; background: var(--rule); flex-shrink: 0; }
+  .day0-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-mid);
+    line-height: 1.5;
+  }
+
+  /* ── ACCORDION ── */
+  .accordion { border-top: 0.5px solid var(--rule); }
+  .day-item { border-bottom: 0.5px solid var(--rule); }
+
+  .day-trigger {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 86px 1fr auto;
+    align-items: stretch;
+    min-height: 82px;
+    transition: background 0.12s;
+    text-align: left;
+  }
+  .day-trigger:hover { background: rgba(0,85,140,0.035); }
+  .day-trigger:focus-visible { outline: 2px solid var(--p302); outline-offset: -2px; }
+
+  .day-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-right: 0.5px solid var(--rule);
+    padding: 16px 10px;
+    gap: 1px;
+    flex-shrink: 0;
+    transition: background 0.4s ease;
+  }
+  .day-col .dow {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    transition: color 0.4s ease;
+  }
+  .day-col .dnum {
+    font-family: 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1;
+    transition: color 0.4s ease;
+  }
+  .day-col .ddate {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    transition: color 0.4s ease;
+  }
+  .day-item.open .day-col {
+    background: var(--p302);
+  }
+  .day-item.open .day-col .dow,
+  .day-item.open .day-col .dnum,
+  .day-item.open .day-col .ddate { color: #fff; }
+
+  .day-info {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+  }
+  .day-theme {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--p302);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+  }
+  .day-theme::before {
+    content: '';
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: var(--p302);
+  }
+  .day-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .day-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .day-chevron {
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    flex-shrink: 0;
+  }
+  .day-chevron svg {
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+    color: var(--ink-soft);
+  }
+  .day-item.open .day-chevron svg { transform: rotate(180deg); color: var(--p302); }
+
+  /* ── BODY ── */
+  .day-body {
+    background: var(--white);
+    border-top: 0.5px solid transparent;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.4s ease,
+      border-top-color 0.3s ease;
+  }
+  .day-item.open .day-body {
+    max-height: 2000px;
+    opacity: 1;
+    border-top-color: var(--rule);
+    transition:
+      max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.45s ease 0.05s,
+      border-top-color 0.2s ease;
+  }
+
+  /* ── TIMELINE TABLE ── */
+  .tl-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .tl-table tr { border-bottom: 0.5px solid var(--rule); }
+  .tl-table tr:last-child { border-bottom: none; }
+
+  .tl-time-cell {
+    vertical-align: top;
+    padding: 15px 16px 15px 22px;
+    width: 100px;
+    border-right: 0.5px solid var(--rule);
+    white-space: nowrap;
+  }
+  .tl-time {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--p302);
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+  .tl-time.open-ended { color: var(--p302); }
+
+  .tl-sprint-cell {
+    vertical-align: top;
+    padding: 15px 16px;
+    width: 170px;
+    border-right: 0.5px solid var(--rule);
+  }
+  .tl-sprint-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .tl-content-cell {
+    vertical-align: top;
+    padding: 15px 22px 15px 18px;
+  }
+
+  .tl-tag {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  .tag-sprint   { background: var(--tag-sprint-bg);    color: var(--tag-sprint-color); }
+  .tag-immersive{ background: var(--tag-immersive-bg); color: var(--tag-immersive-color); }
+  .tag-social   { background: #F5EEE6;                 color: #7A5230; }
+
+  .tl-what {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .tl-ai {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+    line-height: 1.5;
+    border-left: 2px solid var(--p302-light);
+    padding-left: 8px;
+  }
+  .tl-ai strong {
+    font-weight: 600;
+    color: var(--p302);
+  }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    margin-top: 48px;
+    border-top: 0.5px solid var(--rule);
+    padding-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-brand {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .footer-brand strong { color: var(--p302); font-weight: 700; }
+  .footer-note {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .page { padding: 32px 16px 60px; }
+    .day-trigger { grid-template-columns: 64px 1fr auto; }
+    .day-chevron { padding: 0 14px; }
+    .tl-time-cell { width: 72px; padding: 12px 8px 12px 14px; }
+    .tl-sprint-cell { width: 110px; padding: 12px 10px; }
+    .tl-content-cell { padding: 12px 14px 12px 12px; }
+    .tl-what { font-size: 12.5px; }
+    .success-bar { flex-direction: column; gap: 6px; }
+  }
+
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .day-chevron svg, .day-col, .day-col .dow, .day-col .dnum,
+    .day-col .ddate, .day-body { transition: none; }
+  }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="masthead-eyebrow">Sasin Connect+ EMBA &nbsp;·&nbsp; Final Residential</div>
+    <h1 class="masthead-title">The Four Days —<br><em>One Sprint, End to End</em></h1>
+    <div class="masthead-meta">
+      <span><span class="meta-dot"></span>15–19 July 2026</span>
+      <span><span class="meta-dot"></span>Hanoi, Vietnam</span>
+    </div>
+  </div>
+
+  <!-- SUCCESS SENTENCE -->
+  <div class="success-bar">
+    <div class="success-bar-label">Success<br>sentence</div>
+    <div class="success-bar-text">"My team leaves with a venture concept we believe in, evidence-backed validation, a visualization of what the product becomes, and a 30-day plan we own."</div>
+  </div>
+
+  <!-- DAY 0 -->
+  <div class="day0-strip">
+    <div class="day0-col">Day 0<br>Wed 15 Jul</div>
+    <div class="day0-divider"></div>
+    <div class="day0-text">Arrival and check-in. No program. Pre-work already submitted (due Sun 12 July). Facilitators review submissions in the evening and agree coach–team pairings.</div>
+  </div>
+
+  <!-- ACCORDION -->
+  <div class="accordion">
+
+    <!-- ───────────────── DAY 1 ───────────────── -->
+    <div class="day-item open" id="d1">
+      <button class="day-trigger" onclick="toggle('d1')" aria-expanded="true" aria-controls="d1-body">
+        <div class="day-col">
+          <span class="dow">Thu</span>
+          <span class="dnum">1</span>
+          <span class="ddate">16 Jul</span>
+        </div>
+        <div class="day-info">
+          <div class="day-theme">SEE</div>
+          <div class="day-title">Decode Innovation in Fast-Moving Ecosystems</div>
+          <div class="day-sub">Read the ecosystem · Choose one idea · Converge by dinner</div>
+        </div>
+        <div class="day-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <div class="day-body" id="d1-body" role="region" aria-label="Day 1 schedule">
+        <table class="tl-table">
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">08:30–09:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Opening</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Plenary</span>
+              <div class="tl-what">Welcome speech. "Why Vietnam as a catalyst?" The collapse thesis is named. Success sentence, tiers, and the AI rule announced. Coach–team pairings named.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">09:00–10:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Idea Marketplace + SPARC selection</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Each participant posts their pre-work hypothesis. Cohort walks the wall and marks the three they would back. Coaches observe to inform Convergence Council facilitation. Ideas are scored against SPARC dimensions, grouped by theme, and teams are paired to themes.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">10:00–12:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">NIC Visit</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">Travel to NIC. Ecosystem presentation by NIC speaker and tour. Insights: Vietnam as an emerging powerhouse — youth, talent, speed, agility — and how the government is driving a digital economy and society.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">12:30–14:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Lunch</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what">Networking format.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">14:00–16:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">IT Company Visit: OmiGroup</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">Industry Exposure Visit #1. Explore how they solve hard client problems, their design and systems thinking workflow, and how they go from idea → MVP → iteration. Q&amp;A with senior engineers and product leads.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">16:30–18:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Hanoi Street Systems Walk</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">Hanoi Old Quarter. Observe informal systems: traffic, logistics, street vendors, payments, friction points. <em>"What invisible system makes this work, and where is the friction someone could remove?"</em></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">18:30–21:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Dinner</span></td>
+            <td class="tl-content-cell">
+              <div class="tl-what">Convergence Council format. The wall chart goes up. Each team declares its tier target publicly. Every team leaves with ONE working hypothesis — written, private. <em>"Where did I lead today? Where did I avoid?"</em></div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ───────────────── DAY 2 ───────────────── -->
+    <div class="day-item" id="d2">
+      <button class="day-trigger" onclick="toggle('d2')" aria-expanded="false" aria-controls="d2-body">
+        <div class="day-col">
+          <span class="dow">Fri</span>
+          <span class="dnum">2</span>
+          <span class="ddate">17 Jul</span>
+        </div>
+        <div class="day-info">
+          <div class="day-theme">FRAME</div>
+          <div class="day-title">Design Thinking × Systems Thinking × Founder Wisdom</div>
+          <div class="day-sub">Stress assumptions with real evidence · Narrow the problem space</div>
+        </div>
+        <div class="day-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <div class="day-body" id="d2-body" role="region" aria-label="Day 2 schedule">
+        <table class="tl-table">
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">08:30–10:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Dual Framework Bootcamp + Persona Lab</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Design thinking: empathy, reframing, prototyping mindset — moving from assumptions to insights to angles. Systems thinking: identify leverage points, map stakeholders, flows, feedback loops, and understand unintended consequences.</div>
+              <div class="tl-ai"><strong>AI move:</strong> generate 4–6 virtual personas (user, buyer, blocker, operator, investor) and interrogate the hypothesis against them.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">10:30–12:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Startup Founder Panel</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">3 Hanoi founders. Focused only on: how they reframed their problem; what evidence flipped their thinking. Followed by small-group rotations.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">12:30–13:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Networking lunch</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what">Theme 1: "If you started today, what would you build and why?" Theme 2: "If you started today, what would you build differently?"</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">14:00–16:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">IT Company Visit: Savvycom</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">Product and commercialisation lens: systems thinking on real problems, rapid iteration, innovation rituals. Teams observe through their hypothesis.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">16:30–18:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Scooter food tour (Optional)</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what">"Insights are everywhere." Bonding and sensory immersion.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">18:30–21:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Dinner</span></td>
+            <td class="tl-content-cell">
+              <div class="tl-what">Convergence Council format. Evidence memo for the team: why this venture, and what the evidence says so far. Evidence memo on Post-its.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ───────────────── DAY 3 ───────────────── -->
+    <div class="day-item" id="d3">
+      <button class="day-trigger" onclick="toggle('d3')" aria-expanded="false" aria-controls="d3-body">
+        <div class="day-col">
+          <span class="dow">Sat</span>
+          <span class="dnum">3</span>
+          <span class="ddate">18 Jul</span>
+        </div>
+        <div class="day-info">
+          <div class="day-theme">BUILD</div>
+          <div class="day-title">AI Venture Studio &amp; Ecosystem Activation</div>
+          <div class="day-sub">AI build sprints · Lock the business model · Investor feedback</div>
+        </div>
+        <div class="day-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <div class="day-body" id="d3-body" role="region" aria-label="Day 3 schedule">
+        <table class="tl-table">
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">08:30–10:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Pre-pitch Panel</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Each team pitches its concept to the other teams: 10-minute presentation + 10-minute discussion.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">10:00–12:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Build Sprint I: Concept Sharpening &amp; Visualization</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Problem statement, user flow, value proposition.</div>
+              <div class="tl-ai"><strong>AI move:</strong> synthesize insights, market research, customer journey design, and generate the visualization / prototype draft.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">12:30–14:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Lunch + Stretch-or-Hold</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Each team meets their paired coach. Forced question: "Stretch to next tier, or hold?" Decision recorded on the wall chart.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">14:00–15:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Build Sprint II + Business Model Lock</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Fix the biggest gap exposed in the stretch-or-hold call. Lock the business model canvas: revenue, unit economics, GTM, milestone path.</div>
+              <div class="tl-ai"><strong>AI move:</strong> draft unit economics and GTM options, then interrogate every number — real, generated, or invented?</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">15:30–17:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Venture Builders &amp; Investors Panel</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">45-minute talk. At this point, teams have built: revenue model, unit economics, go-to-market strategy, milestone path, and required AI workflows.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">17:00–21:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Experiential Dinner</span></td>
+            <td class="tl-content-cell">
+              <div class="tl-what">The Quintessence of Tonkin Show. AI prototype + locked business model.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ───────────────── DAY 4 ───────────────── -->
+    <div class="day-item" id="d4">
+      <button class="day-trigger" onclick="toggle('d4')" aria-expanded="false" aria-controls="d4-body">
+        <div class="day-col">
+          <span class="dow">Sun</span>
+          <span class="dnum">4</span>
+          <span class="ddate">19 Jul</span>
+        </div>
+        <div class="day-info">
+          <div class="day-theme">PITCH</div>
+          <div class="day-title">VC-Level Reality Check &amp; Leadership Reflection</div>
+          <div class="day-sub">Pitch at HUST · Live VC panel · Leadership debrief · Departure</div>
+        </div>
+        <div class="day-chevron">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
+      <div class="day-body" id="d4-body" role="region" aria-label="Day 4 schedule">
+        <table class="tl-table">
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">Before 08:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Breakfast &amp; Hotel Checkout</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what">Participants check out before departure. Bus departs at 08:00 to Hanoi University of Science and Technology (HUST).</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">08:30–12:00</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Commercialising Innovation &amp; Final Pitches</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-immersive">Immersive</span>
+              <div class="tl-what">Session opens with a presentation on how university and research laboratories commercialise innovation, followed by pitches from HUST-affiliated startups.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time open-ended"></span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Final Venture Pitches</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Venture Sprint</span>
+              <div class="tl-what">Each team delivers a structured pitch comprising: a 7-minute venture presentation, a 3-minute visualization walkthrough, and an 8-minute panel Q&amp;A. The panel consists of the programme instructor, a Vietnamese investor, a founder, and an executive coach.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time open-ended"></span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Leadership Debrief &amp; Closing</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-sprint">Plenary</span>
+              <div class="tl-what">Panel feedback on pitches. Cohort-level group reflection. The 60-day report-out date is confirmed. Programme closes with a group photograph.</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time">12:00–13:30</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Lunch</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what"></div>
+            </td>
+          </tr>
+          <tr>
+            <td class="tl-time-cell"><span class="tl-time open-ended">13:30 →</span></td>
+            <td class="tl-sprint-cell"><span class="tl-sprint-name">Departure</span></td>
+            <td class="tl-content-cell">
+              <span class="tl-tag tag-social">Social</span>
+              <div class="tl-what">Transfer to Noi Bai International Airport.</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /accordion -->
+
+
+  <!-- FOOTER -->
+  <div class="page-footer">
+    <div class="footer-brand"><strong>Sasin Connect+</strong> EMBA · Final Residential · Hanoi 2026</div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  function toggle(id) {
+    var el = document.getElementById(id);
+    var btn = el.querySelector('.day-trigger');
+    var isOpen = el.classList.contains('open');
+
+    document.querySelectorAll('.day-item').forEach(function(d) {
+      d.classList.remove('open');
+      d.querySelector('.day-trigger').setAttribute('aria-expanded', 'false');
+    });
+
+    if (!isOpen) {
+      el.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      setTimeout(function() {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
+  }
+</script>
+</body>
+</html>
