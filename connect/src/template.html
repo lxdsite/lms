@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moodle Engagement Grading</title>
+<style>/*{{STYLES}}*/</style>
+</head>
+<body>
+
+<!-- ===== upload screen ===== -->
+<div id="upload-screen">
+  <div class="upload-card">
+    <div class="upload-logo">📊</div>
+    <h1>Moodle Engagement Grading</h1>
+    <p class="muted">Turn a Moodle <strong>Logs</strong> export into a per-student engagement score you can grade with. Everything runs in your browser — your data never leaves this computer.</p>
+    <div id="dropzone" class="dropzone">
+      <div class="dz-big">Drop a logs JSON file here</div>
+      <div class="muted">or click to choose · <code>logs_*.json</code></div>
+      <input type="file" id="file-input" accept=".json,application/json" hidden>
+    </div>
+    <div id="upload-status" class="upload-status"></div>
+    <details class="how">
+      <summary>How do I export the log?</summary>
+      <p>In your Moodle course go to <strong>Reports → Logs</strong>, leave "All participants" / "All days", set the <strong>Download</strong> format to <strong>JSON</strong>, and download. Then drop that file above.</p>
+    </details>
+  </div>
+</div>
+
+<!-- ===== app ===== -->
+<div id="app" style="display:none">
+<header class="app">
+  <div class="app-title">
+    <h1 id="course-title">Course</h1>
+    <span class="code" id="course-code"></span>
+  </div>
+  <div class="app-sub" id="course-meta"></div>
+  <div class="controls">
+    <label class="control">Period
+      <select id="range-select">
+        <option value="all">All time</option>
+        <option value="30">Last 30 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="7">Last 7 days</option>
+      </select>
+    </label>
+    <span class="spacer"></span>
+    <button class="btn no-print" id="roles-btn">Manage roles</button>
+    <button class="btn no-print" id="load-btn">Load course…</button>
+    <button class="btn primary no-print" id="print-btn">⬇ Save as PDF / Print</button>
+  </div>
+  <nav class="tabs">
+    <button data-tab="time" class="active">Time</button>
+    <button data-tab="atrisk">At-risk</button>
+    <button data-tab="engagement">Engagement over time</button>
+    <button data-tab="content">Content</button>
+    <button data-tab="assessment">Assessment &amp; participation</button>
+  </nav>
+</header>
+
+<main>
+  <section class="tab active" id="tab-time"></section>
+  <section class="tab" id="tab-atrisk"></section>
+  <section class="tab" id="tab-engagement"></section>
+  <section class="tab" id="tab-content"></section>
+  <section class="tab" id="tab-assessment"></section>
+</main>
+
+<footer class="app">
+  <div id="staff-note"></div>
+  <div style="margin-top:6px">
+    The engagement score is <strong>class-relative</strong> — it ranks effort within this class, not against an absolute standard;
+    small classes make the curve noisier. Moodle logs contain no due dates, so a "missing submission" means none was recorded at all
+    (not lateness). Roles are auto-detected — use <strong>Manage roles</strong> to correct any. Times are shown as recorded in the export.
+  </div>
+  <div class="muted" id="gen-note" style="margin-top:6px"></div>
+</footer>
+</div>
+
+<!-- drill-down drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><h2 id="drawer-title"></h2><button class="close-x" id="drawer-close" aria-label="Close">×</button></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<!-- roles modal -->
+<div class="drawer-backdrop" id="roles-backdrop"></div>
+<div class="modal" id="roles-modal">
+  <div class="drawer-head"><h2>Manage roles</h2><button class="close-x" id="roles-close" aria-label="Close">×</button></div>
+  <div class="drawer-body" id="roles-body"></div>
+</div>
+
+<script>/*{{CHARTJS}}*/</script>
+<script>/*{{INGEST}}*/</script>
+<script>/*{{APP}}*/</script>
+</body>
+</html>
