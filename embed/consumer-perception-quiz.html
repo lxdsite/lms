@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consumer Perception Quiz</title>
+<style>
+  :root {
+    --bg-page: #faf9f5;
+    --bg-card: #ffffff;
+    --bg-secondary: #f1efe8;
+    --bg-success: #eaf3de;
+    --bg-danger: #fcebeb;
+    --bg-info: #e6f1fb;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #888780;
+    --text-success: #27500a;
+    --text-danger: #791f1f;
+    --text-info: #0c447c;
+    --border-tertiary: rgba(0,0,0,0.12);
+    --border-secondary: rgba(0,0,0,0.2);
+    --border-success: #97c459;
+    --border-danger: #f09595;
+    --border-info: #85b7eb;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 2rem 1rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-tertiary);
+    padding: 2rem;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0 0 0.25rem;
+  }
+  .header-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--bg-secondary);
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 33.3%;
+    background: var(--text-info);
+    transition: width 0.3s ease;
+  }
+  .scenario-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-info);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .scenario {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+  .question-text {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .option-btn {
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    width: 100%;
+    cursor: pointer;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: var(--bg-secondary);
+  }
+  .option-btn:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+  .option-btn:disabled {
+    cursor: default;
+  }
+  .option-letter {
+    font-weight: 500;
+    margin-right: 8px;
+    color: var(--text-secondary);
+  }
+  .feedback {
+    display: none;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-size: 15px;
+  }
+  .feedback-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  .feedback-body ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .feedback-body li {
+    margin-bottom: 4px;
+  }
+  .feedback-body .label {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .primary-btn {
+    display: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--text-primary);
+    color: var(--bg-card);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s, transform 0.05s;
+  }
+  .primary-btn:hover {
+    opacity: 0.85;
+  }
+  .primary-btn:active {
+    transform: scale(0.98);
+  }
+  .secondary-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 0.5px solid var(--border-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.05s;
+  }
+  .secondary-btn:hover {
+    background: var(--bg-secondary);
+  }
+  .secondary-btn:active {
+    transform: scale(0.98);
+  }
+  .final-screen {
+    display: none;
+    text-align: center;
+    padding: 1.5rem 0;
+  }
+  .final-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .final-score {
+    font-size: 40px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .final-score-total {
+    color: var(--text-secondary);
+    font-size: 24px;
+  }
+  .final-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  .final-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .correct-answer {
+    background: var(--bg-success) !important;
+    border-color: var(--border-success) !important;
+    color: var(--text-success) !important;
+  }
+  .wrong-answer {
+    background: var(--bg-danger) !important;
+    border-color: var(--border-danger) !important;
+    color: var(--text-danger) !important;
+  }
+  .dimmed {
+    opacity: 0.5;
+  }
+  .icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="header-title">Consumer perception quiz</h1>
+  <p class="header-subtitle">Three scenarios on attitude change strategy</p>
+
+  <div id="quiz-active">
+    <div class="meta-row">
+      <div>Question <span id="q-num">1</span> of 3</div>
+      <div>Score: <span id="score">0</span>/3</div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+    </div>
+
+    <div class="scenario-label" id="scenario-label">Scenario</div>
+    <div class="scenario" id="scenario"></div>
+    <div class="question-text" id="question"></div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback">
+      <div class="feedback-header" id="feedback-header"></div>
+      <div class="feedback-body" id="feedback-body"></div>
+    </div>
+
+    <div class="actions">
+      <button class="primary-btn" id="next-btn">Next question</button>
+    </div>
+  </div>
+
+  <div class="final-screen" id="final-screen">
+    <div class="final-label">Quiz complete</div>
+    <div class="final-score"><span id="final-score">0</span><span class="final-score-total"> / 3</span></div>
+    <div class="final-message" id="final-message"></div>
+    <div class="final-actions">
+      <button class="secondary-btn" id="restart-btn">Restart quiz</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const questions = [
+    {
+      scenario: "GreenDrive Motors wants to change attitudes toward electric vehicles among middle-aged consumers (40\u201355) who currently believe electric cars are \"unreliable, expensive, and inconvenient.\" Research shows these consumers are highly analytical, value factual information, and make carefully considered purchase decisions. They have moderate to high involvement with car purchases and actively seek detailed product information.",
+      question: "Which attitude change strategy would be MOST effective for this target segment?",
+      options: [
+        "Use celebrity endorsements and emotional appeals showing families enjoying road trips in electric vehicles",
+        "Present detailed comparative data on reliability ratings, total cost of ownership, and charging infrastructure expansion",
+        "Focus on environmental guilt and social responsibility messaging",
+        "Use humor and attractive visuals to create positive associations with the brand"
+      ],
+      correct: 1,
+      explanation: {
+        correct: "Addresses their specific beliefs (unreliable, expensive, inconvenient) with concrete data and evidence. Matches their information-seeking behavior and analytical decision-making style \u2014 this is the central route to persuasion (ELM).",
+        wrong: [
+          "A \u2014 Peripheral route cues don't match an analytical, high-involvement audience.",
+          "C \u2014 Guilt-based appeals risk reactance in this demographic.",
+          "D \u2014 Humor trivializes what they consider a serious purchase decision."
+        ]
+      }
+    },
+    {
+      scenario: "TrendyStyle, a popular fast-fashion brand, faces negative attitudes after reports about poor working conditions in its factories. Young consumers (18\u201325), previously loyal customers, now associate the brand with \"exploitation and unethical practices.\" Many still love the brand's affordable, trendy designs. The brand needs to rebuild trust while maintaining its fashion-forward image.",
+      question: "What attitude change strategy should TrendyStyle prioritize to address the negative associations while maintaining brand appeal?",
+      options: [
+        "Launch a major advertising campaign featuring popular influencers wearing their latest collections",
+        "Reduce prices even further to emphasize the value proposition",
+        "Implement and transparently communicate concrete changes to factory conditions, worker treatment, and supply chain ethics",
+        "Shift focus to promoting their eco-friendly packaging without addressing factory conditions"
+      ],
+      correct: 2,
+      explanation: {
+        correct: "Addresses the core issue directly with substantive changes. Young consumers value authenticity and social responsibility, and transparency builds trust while allowing them to monitor progress.",
+        wrong: [
+          "A \u2014 Diversion tactic that doesn't address underlying concerns.",
+          "B \u2014 Reinforces the \"exploitation for low prices\" narrative.",
+          "D \u2014 Reads as greenwashing without addressing the main ethical issue."
+        ]
+      }
+    },
+    {
+      scenario: "Rare Beauty, a cosmetics brand, wants to expand to middle-income consumers who currently view the brand as \"too expensive and not for people like me.\" These consumers have positive attitudes toward product quality but strong beliefs that luxury brands are exclusionary. They feel the brand doesn't welcome or understand them, and experience low self-efficacy about fitting into the luxury beauty world.",
+      question: "Which strategy would be most effective to change the attitude that luxury beauty \"isn't for people like me\"?",
+      options: [
+        "Emphasize product superiority and awards won by beauty experts",
+        "Feature real customers with diverse backgrounds sharing their authentic experiences and transformations",
+        "Reduce prices across all product lines to improve accessibility",
+        "Create educational content about proper application techniques and color theory"
+      ],
+      correct: 1,
+      explanation: {
+        correct: "Addresses the core psychological barrier of social identity and belonging. Seeing similar others succeed builds self-efficacy and changes beliefs about accessibility.",
+        wrong: [
+          "A \u2014 Reinforces exclusivity rather than accessibility.",
+          "C \u2014 Damages brand equity and doesn't address the psychological barrier.",
+          "D \u2014 Doesn't address the \"not for me\" identity issue."
+        ]
+      }
+    }
+  ];
+
+  let current = 0;
+  let score = 0;
+  let answered = false;
+
+  const qNum = document.getElementById('q-num');
+  const scoreEl = document.getElementById('score');
+  const progress = document.getElementById('progress');
+  const scenarioEl = document.getElementById('scenario');
+  const questionEl = document.getElementById('question');
+  const optionsEl = document.getElementById('options');
+  const feedbackEl = document.getElementById('feedback');
+  const feedbackHeader = document.getElementById('feedback-header');
+  const feedbackBody = document.getElementById('feedback-body');
+  const nextBtn = document.getElementById('next-btn');
+  const quizActive = document.getElementById('quiz-active');
+  const finalScreen = document.getElementById('final-screen');
+  const finalScore = document.getElementById('final-score');
+  const finalMessage = document.getElementById('final-message');
+  const restartBtn = document.getElementById('restart-btn');
+
+  function render() {
+    answered = false;
+    const q = questions[current];
+    qNum.textContent = current + 1;
+    progress.style.width = ((current + 1) / questions.length * 100) + '%';
+    scenarioEl.textContent = q.scenario;
+    questionEl.textContent = q.question;
+    optionsEl.innerHTML = '';
+    feedbackEl.style.display = 'none';
+    nextBtn.style.display = 'none';
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      const letter = String.fromCharCode(65 + idx);
+      btn.innerHTML = '<span class="option-letter">' + letter + '</span>' + opt;
+      btn.dataset.idx = idx;
+      btn.addEventListener('click', () => selectAnswer(idx));
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(idx) {
+    if (answered) return;
+    answered = true;
+    const q = questions[current];
+    const buttons = optionsEl.querySelectorAll('button');
+    const isCorrect = idx === q.correct;
+    if (isCorrect) {
+      score++;
+      scoreEl.textContent = score;
+    }
+
+    buttons.forEach((b, i) => {
+      b.disabled = true;
+      if (i === q.correct) {
+        b.classList.add('correct-answer');
+      } else if (i === idx && !isCorrect) {
+        b.classList.add('wrong-answer');
+      } else {
+        b.classList.add('dimmed');
+      }
+    });
+
+    const checkSvg = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-success);"><circle cx="12" cy="12" r="10"></circle><path d="M9 12l2 2 4-4"></path></svg>';
+    const infoSvg = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-info);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+    const headerLabel = isCorrect
+      ? '<span style="color: var(--text-success);">Correct</span>'
+      : '<span>Not quite \u2014 the best answer is ' + String.fromCharCode(65 + q.correct) + '</span>';
+    feedbackHeader.innerHTML = (isCorrect ? checkSvg : infoSvg) + headerLabel;
+
+    let bodyHtml = '<div style="margin-bottom: 10px;"><span class="label">Why ' + String.fromCharCode(65 + q.correct) + ' works:</span> ' + q.explanation.correct + '</div>';
+    bodyHtml += '<div class="label" style="margin-bottom: 4px;">Why the others fall short:</div><ul>';
+    q.explanation.wrong.forEach(w => {
+      bodyHtml += '<li>' + w + '</li>';
+    });
+    bodyHtml += '</ul>';
+    feedbackBody.innerHTML = bodyHtml;
+    feedbackEl.style.display = 'block';
+
+    nextBtn.style.display = 'inline-block';
+    nextBtn.textContent = current < questions.length - 1 ? 'Next question' : 'See results';
+  }
+
+  function next() {
+    current++;
+    if (current >= questions.length) {
+      showFinal();
+    } else {
+      render();
+    }
+  }
+
+  function showFinal() {
+    quizActive.style.display = 'none';
+    finalScreen.style.display = 'block';
+    finalScore.textContent = score;
+    let msg;
+    if (score === 3) msg = "Perfect \u2014 you've nailed the link between consumer beliefs and attitude change strategy.";
+    else if (score === 2) msg = "Solid grasp of how to match strategy to consumer mindset.";
+    else if (score === 1) msg = "Some progress \u2014 review how selective perception shapes which strategies land.";
+    else msg = "Worth revisiting how to align persuasion route with audience involvement and beliefs.";
+    finalMessage.textContent = msg;
+  }
+
+  function restart() {
+    current = 0;
+    score = 0;
+    scoreEl.textContent = '0';
+    quizActive.style.display = 'block';
+    finalScreen.style.display = 'none';
+    render();
+  }
+
+  nextBtn.addEventListener('click', next);
+  restartBtn.addEventListener('click', restart);
+
+  render();
+})();
+</script>
+
+</body>
+</html>
